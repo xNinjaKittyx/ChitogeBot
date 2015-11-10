@@ -4,10 +4,11 @@ import threading
 import random
 
 import discord
-import wikipedia
 from discord.utils import find
+import wikipedia
 from cassiopeia import riotapi
 from cassiopeia import type
+import re
 
 __author__ = "Daniel Ahn"
 __version__ = "0.4"
@@ -28,6 +29,7 @@ riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 
 client = discord.Client()
 client.login('daniel.s.ahn@biola.edu', 'Daniel7415295051')
+
 
 if not client.is_logged_in:
     print('Logging in to Discord failed')
@@ -121,43 +123,57 @@ def lookup(message):
 
 def roll(message):
     x = random.randint(1, 6)
-    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention, x))
+    client.send_message(message.channel, '@{} rolled a {}!'.format(str(message.author), x))
+
+
+def cleverTalk(message):
+
+    def worker():
+        content = message.content()
+        re.sub(client.user.mention() + " ", "",content, count=1)
+
 
 
 @client.event
 def on_message(message):
+
     if message.content.startswith('!bot'):
         bot(message)
 
-    if message.content.startswith('!help'):
+    elif message.content.startswith('!help'):
         client.send_message(message.author, 'Type !help for help.')
         client.send_message(message.author, 'Type !hello for a hello message from the bot.')
         client.send_message(message.author, 'Type !who [user] for more info on the user.')
         client.send_message(message.author, 'Type !wiki [topic] for a wiki page.')
 
-    if message.content.startswith('Hello ChitogeBot'):
+    elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
 
-    if message.content.startswith('!who'):
+    elif message.content.startswith('!who'):
         who(message)
 
-    if message.content.startswith('!wiki'):
+    elif message.content.startswith('!wiki'):
         wiki(message)
 
-    if message.content.startswith('!lookup'):
+    elif message.content.startswith('!lookup'):
         lookup(message)
 
-    if message.content.startswith('!roll'):
+    elif message.content.startswith('!roll'):
         roll(message)
 
-    if message.content.startswith('#TeamOnodera'):
+    elif message.content.startswith('#TeamOnodera'):
         client.send_message(message.channel, 'Fk off.')
 
-    if message.content.startswith('#TeamChitoge'):
+    elif message.content.startswith('#TeamChitoge'):
         client.send_message(message.channel, 'Chitoge is so cute isn\'t she :D')
 
-    if message.content.startswith('#Tsunderes4Life'):
+    elif message.content.startswith('#Tsunderes4Life'):
         client.send_message(message.channel, 'I like the way you think.')
+
+    elif message.content.startswith('@{}'.format(str(client.user))):
+        cleverTalk(message)
+
+
 
 
 @client.event
