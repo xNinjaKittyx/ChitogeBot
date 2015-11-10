@@ -123,7 +123,7 @@ def lookup(message):
 
 def roll(message):
     x = random.randint(1, 6)
-    client.send_message(message.channel, '@{} rolled a {}!'.format(str(message.author), x))
+    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
 
 
 def cleverTalk(message):
