@@ -42,6 +42,15 @@ def bot(message):
                         "Hi, I'm {name}. I am running version {version}.".format(name=name, version=__version__))
 
 
+def cinfo(message):
+    if not message.channel.is_private:
+        client.send_message(message.channel, "```Name: " + message.channel.name + "\nID: " + message.channel.id
+                            + "\nType: " + messsage.channel.type + "```")
+    else:
+        client.send_message(message.channel, "```User: " + message.channel.user + "\nID: " + message.channel.id + "```")
+
+
+
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
 
@@ -143,6 +152,9 @@ def on_message(message):
     if message.content.startswith('!bot'):
         bot(message)
 
+    elif message.content.startswith('!cinfo'):
+        cinfo(message)
+
     elif message.content.startswith('!help'):
         client.send_message(message.author, 'Type !help for help.')
         client.send_message(message.author, 'Type !hello for a hello message from the bot.')
@@ -152,17 +164,17 @@ def on_message(message):
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
 
-    elif message.content.startswith('!who'):
-        who(message)
-
-    elif message.content.startswith('!wiki'):
-        wiki(message)
-
     elif message.content.startswith('!lookup'):
         lookup(message)
 
     elif message.content.startswith('!roll'):
         roll(message)
+
+    elif message.content.startswith('!who'):
+        who(message)
+
+    elif message.content.startswith('!wiki'):
+        wiki(message)
 
     elif message.content.startswith('#TeamOnodera'):
         client.send_message(message.channel, 'Fk off.')
@@ -173,8 +185,8 @@ def on_message(message):
     elif message.content.startswith('#Tsunderes4Life'):
         client.send_message(message.channel, 'I like the way you think.')
 
-    elif message.content.startswith('@{}'.format(str(client.user))):
-        cleverTalk(message)
+    elif message.content.startswith('{}'.format(client.user.mention())):
+        client.send_message(message.channel, 'You have mentioned me.')
 
 
 
