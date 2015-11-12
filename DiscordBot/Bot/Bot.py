@@ -2,6 +2,7 @@ import logging
 import requests
 import threading
 import random
+import json
 
 import discord
 from discord.utils import find
@@ -61,9 +62,11 @@ def who(message):
                 except TypeError:
                     gameplaying = 'None'
                 client.send_message(message.channel,
-                                    'Name: ' + member.name + '\nStatus: ' + member.status.capitalize() + '\nGame Playing: ' + gameplaying + '\nJoined on: ' + str(
-                                        member.joined_at.month) + '/' + str(member.joined_at.day) + '/' + str(
-                                        member.joined_at.year))
+                                    '```Name: ' + member.name + '\nID: ' + member.id  +
+                                        '\nStatus: ' + member.status.capitalize() + '\nGame Playing: ' + gameplaying +
+                                        '\nAvatar: ' + member.avatar_url() +
+                                        '\nJoined on: ' + str( member.joined_at.month) + '/' +
+                                        str(member.joined_at.day) + '/' + str(member.joined_at.year) + '```')
 
                 break
         if not userfound:
