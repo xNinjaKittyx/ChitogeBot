@@ -1,10 +1,11 @@
+import json
 import logging
+import random
+import re
 import requests
 import threading
-import random
 import time
-import json
-import re
+import os
 
 import discord
 from discord.utils import find
@@ -98,6 +99,26 @@ def eval(message):
 
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
+
+
+def invite(messsage):
+    argname = message.content[8:]
+    #TODO: join a server by invite. Need to make IGNORE list first
+
+
+def join(message):
+    argname = message.content[6:]
+    #TODO: Join A Voice_Channel
+
+
+
+def listmusic(message):
+    list = ""
+    files = [f for f in os.listdir('music') if os.path.isfile(f)]
+    for f in files:
+        list.append(str(f) + " || ")
+    client.send_message(message.channel, "```" + list + "```")
+
 
 
 def lookup(message):
