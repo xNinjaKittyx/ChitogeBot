@@ -1,6 +1,6 @@
 @echo
 pip install discord.py
 pip install wikipedia
-pip install cassieopia
+pip install cassiopeia
 pip install pyglet
 pause
