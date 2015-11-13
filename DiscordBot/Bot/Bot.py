@@ -2,7 +2,8 @@ import logging
 import requests
 import threading
 import random
-
+import time
+import json
 import discord
 from discord.utils import find
 import wikipedia
@@ -11,7 +12,7 @@ from cassiopeia import type
 import re
 
 __author__ = "Daniel Ahn"
-__version__ = "0.4"
+__version__ = "0.5"
 name = "ChitogeBot"
 
 random.seed()
@@ -22,14 +23,14 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-games = requests.get('https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
+games = requests.get(
+    'https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
 
 riotapi.set_region("NA")
 riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 
 client = discord.Client()
 client.login('daniel.s.ahn@biola.edu', 'Daniel7415295051')
-
 
 if not client.is_logged_in:
     print('Logging in to Discord failed')
@@ -41,8 +42,60 @@ def bot(message):
                         "Hi, I'm {name}. I am running version {version}.".format(name=name, version=__version__))
 
 
+def cinfo(message):
+    if not message.channel.is_private:
+        client.send_message(message.channel, "```Name: " + message.channel.name + "\nID: " + message.channel.id +
+                            "\nType: " + message.channel.type + "```")
+    else:
+        client.send_message(message.channel, "```User: " + message.channel.user + "\nID: " + message.channel.id + "```")
+
+
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
+
+
+def lookup(message):
+    argname = message.content[8:]
+
+    def worker():
+        try:
+            summoner = riotapi.get_summoner_by_name(argname)
+            client.send_message(message.channel, "Name: {name}\nLevel: {level}\nRank: {rank}".format(name=summoner.name,
+                                                                                                     level=summoner.level,
+                                                                                                     rank=
+                                                                                                     summoner.leagues()[
+                                                                                                         0]))
+        except type.api.exception.APIError as e:
+            client.send_message(message.channel, 'Lookup Failed.\nError: ' + str(e.error_code))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def roll(message):
+    x = random.randint(1, 6)
+    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
+
+
+def uptime(message):
+    totalMin = 0
+    totalHr = 0
+    totalDay = 0
+
+    totalSec = int(time.clock() - upTime)
+    if (totalSec > 60):
+        totalMin = totalSec % 60
+        totalSec -= (totalMin * 60)
+    if (totalMin > 60):
+        totalHr = totalMin % 60
+        totalMin -= (totalHr * 60)
+    if (totalHr > 24):
+        totalDay = totalHr % 24
+        totalHr -= (totalDay * 24)
+    client.send_message(message.channel,
+                        'ChitogeBot has been running for {} days, {} hours, {} minutes, and {} seconds '
+                        .format(totalDay, totalHr, totalMin, totalSec))
 
 
 def who(message):
@@ -61,9 +114,11 @@ def who(message):
                 except TypeError:
                     gameplaying = 'None'
                 client.send_message(message.channel,
-                                    'Name: ' + member.name + '\nStatus: ' + member.status.capitalize() + '\nGame Playing: ' + gameplaying + '\nJoined on: ' + str(
-                                        member.joined_at.month) + '/' + str(member.joined_at.day) + '/' + str(
-                                        member.joined_at.year))
+                                    '```Name: ' + member.name + '\nID: ' + member.id +
+                                    '\nStatus: ' + member.status.capitalize() + '\nGame Playing: ' + gameplaying +
+                                    '\nAvatar: ' + member.avatar_url() +
+                                    '\nJoined on: ' + str(member.joined_at.month) + '/' +
+                                    str(member.joined_at.day) + '/' + str(member.joined_at.year) + '```')
 
                 break
         if not userfound:
@@ -106,39 +161,19 @@ def wiki(message):
     t.start()
 
 
-def lookup(message):
-    argname = message.content[8:]
-
-    def worker():
-        try:
-            summoner = riotapi.get_summoner_by_name(argname)
-            client.send_message(message.channel, "Name: {name}\nLevel: {level}\nRank: {rank}".format(name=summoner.name, level=summoner.level, rank=summoner.leagues()[0]))
-        except type.api.exception.APIError as e:
-            client.send_message(message.channel, 'Lookup Failed.\nError: ' + str(e.error_code))
-
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
-
-
-def roll(message):
-    x = random.randint(1, 6)
-    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
-
-
 def cleverTalk(message):
-
     def worker():
         content = message.content()
-        re.sub(client.user.mention() + " ", "",content, count=1)
-
+        re.sub(client.user.mention() + " ", "", content, count=1)
 
 
 @client.event
 def on_message(message):
-
     if message.content.startswith('!bot'):
         bot(message)
+
+    elif message.content.startswith('!cinfo'):
+        cinfo(message)
 
     elif message.content.startswith('!help'):
         client.send_message(message.author, 'Type !help for help.')
@@ -149,17 +184,20 @@ def on_message(message):
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
 
-    elif message.content.startswith('!who'):
-        who(message)
-
-    elif message.content.startswith('!wiki'):
-        wiki(message)
-
     elif message.content.startswith('!lookup'):
         lookup(message)
 
     elif message.content.startswith('!roll'):
         roll(message)
+
+    elif message.content.startswith('!uptime'):
+        uptime(message)
+
+    elif message.content.startswith('!who'):
+        who(message)
+
+    elif message.content.startswith('!wiki'):
+        wiki(message)
 
     elif message.content.startswith('#TeamOnodera'):
         client.send_message(message.channel, 'Fk off.')
@@ -170,10 +208,8 @@ def on_message(message):
     elif message.content.startswith('#Tsunderes4Life'):
         client.send_message(message.channel, 'I like the way you think.')
 
-    elif message.content.startswith('@{}'.format(str(client.user))):
-        cleverTalk(message)
-
-
+    elif message.content.startswith('{}'.format(client.user.mention())):
+        client.send_message(message.channel, 'You have mentioned me.')
 
 
 @client.event
@@ -195,4 +231,5 @@ def on_ready():
     print("ID: " + client.user.id)
 
 
+upTime = time.clock()
 client.run()
