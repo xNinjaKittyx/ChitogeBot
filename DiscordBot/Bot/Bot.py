@@ -4,12 +4,13 @@ import threading
 import random
 import time
 import json
+import re
+
 import discord
 from discord.utils import find
 import wikipedia
 from cassiopeia import riotapi
 from cassiopeia import type
-import re
 
 __author__ = "Daniel Ahn"
 __version__ = "0.5"
@@ -50,6 +51,51 @@ def cinfo(message):
         client.send_message(message.channel, "```User: " + message.channel.user + "\nID: " + message.channel.id + "```")
 
 
+def debug(message):
+    argname = message.content[7:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(exec(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def exec(message):
+    argname = message.content[6:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(exec(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def eval(message):
+    argname = message.content[6:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(eval(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
 
@@ -85,13 +131,13 @@ def uptime(message):
 
     totalSec = int(time.clock() - upTime)
     if (totalSec > 60):
-        totalMin = totalSec % 60
-        totalSec -= (totalMin * 60)
+        totalMin = totalSec / 60
+        totalSec = totalSec - (totalMin * 60)
     if (totalMin > 60):
-        totalHr = totalMin % 60
-        totalMin -= (totalHr * 60)
+        totalHr = totalMin / 60
+        totalMin = totalMin - (totalHr * 60)
     if (totalHr > 24):
-        totalDay = totalHr % 24
+        totalDay = totalHr / 24
         totalHr -= (totalDay * 24)
     client.send_message(message.channel,
                         'ChitogeBot has been running for {} days, {} hours, {} minutes, and {} seconds '
@@ -174,6 +220,15 @@ def on_message(message):
 
     elif message.content.startswith('!cinfo'):
         cinfo(message)
+
+    elif message.content.startswith('!debug'):
+        debug(message)
+
+    elif message.content.startswith('!eval'):
+        eval(message)
+
+    elif message.content.startswith('!exec'):
+        exec(message)
 
     elif message.content.startswith('!help'):
         client.send_message(message.author, 'Type !help for help.')
