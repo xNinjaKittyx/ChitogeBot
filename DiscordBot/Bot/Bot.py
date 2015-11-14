@@ -58,46 +58,31 @@ def cinfo(message):
 def debug(message):
     argname = message.content[7:]
 
-    def worker():
-        if message.author.id == "82221891191844864":
-            try:
-                client.send_message(message.channel, "```{}```".format(exec(argname)))
-            except SyntaxError as err:
-                client.send_message(message.channel, "```{}```".format(err))
-
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(eval(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
 
 
 def exec(message):
     argname = message.content[6:]
 
-    def worker():
-        if message.author.id == "82221891191844864":
-            try:
-                client.send_message(message.channel, "```{}```".format(exec(argname)))
-            except SyntaxError as err:
-                client.send_message(message.channel, "```{}```".format(err))
-
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(exec(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
 
 
 def eval(message):
     argname = message.content[6:]
 
-    def worker():
-        if message.author.id == "82221891191844864":
-            try:
-                client.send_message(message.channel, "```{}```".format(eval(argname)))
-            except SyntaxError as err:
-                client.send_message(message.channel, "```{}```".format(err))
-
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(eval(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
 
 
 def hello(message):
@@ -144,7 +129,7 @@ def lookup(message):
 def play(message):
     argname = message.content[6:]
     songname = ''
-    if argname.length() < 3:
+    if argname.len() < 3:
         client.send_message(message.channel, '```Songname too short```')
         return
     try:
