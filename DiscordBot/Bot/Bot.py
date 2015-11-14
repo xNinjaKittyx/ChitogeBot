@@ -157,14 +157,14 @@ def uptime(message):
     totalDay = 0
 
     totalSec = int(time.clock() - upTime)
-    if (totalSec > 60):
-        totalMin = totalSec / 60
-        totalSec = totalSec - (totalMin * 60)
-    if (totalMin > 60):
-        totalHr = totalMin / 60
-        totalMin = totalMin - (totalHr * 60)
-    if (totalHr > 24):
-        totalDay = totalHr / 24
+    if totalSec > 60:
+        totalMin = int(totalSec / 60)
+        totalSec -= (totalMin * 60)
+    if totalMin > 60:
+        totalHr = int(totalMin / 60)
+        totalMin -= (totalHr * 60)
+    if totalHr > 24:
+        totalDay = int(totalHr / 24)
         totalHr -= (totalDay * 24)
     client.send_message(message.channel,
                         'ChitogeBot has been running for {} days, {} hours, {} minutes, and {} seconds '
@@ -258,10 +258,20 @@ def on_message(message):
         exec(message)
 
     elif message.content.startswith('!help'):
-        client.send_message(message.author, 'Type !help for help.')
-        client.send_message(message.author, 'Type !hello for a hello message from the bot.')
-        client.send_message(message.author, 'Type !who [user] for more info on the user.')
-        client.send_message(message.author, 'Type !wiki [topic] for a wiki page.')
+        client.send_message(message.author, '!help - Display this help message.\n' +
+                            '!cinfo - Channel Information\n' +
+                            '!who [user] - User Information\n' +
+                            '!wiki [topic] - Look for a wiki page\n' +
+                            '!listmusic - List all music files available on the bot\n' +
+                            '!lookup [Summoner] - Find Summoner on LoL\n' +
+                            '!next - Play the next song\n' +
+                            '!pause - Pause the song\n' +
+                            '!play [song] - Play a song\n' +
+                            '!resume - Resume the player' +
+                            '!stop - Stop the player - Currently not working\n' +
+                            '!roll - Roll a die\n' +
+                            '!uptime - Bot uptime\n' +
+                            'More to Come! Check https://github.com/xNinjaKittyx/ChitogeBot')
 
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
