@@ -12,12 +12,11 @@ from discord.utils import find
 import wikipedia
 from cassiopeia import riotapi
 from cassiopeia import type
+from pyglet import media
 
 __author__ = "Daniel Ahn"
-__version__ = "0.5"
+__version__ = "0.5.1"
 name = "ChitogeBot"
-
-random.seed()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -25,18 +24,22 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-games = requests.get(
-    'https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
-
-riotapi.set_region("NA")
-riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
-
 client = discord.Client()
 client.login('daniel.s.ahn@biola.edu', 'Daniel7415295051')
 
 if not client.is_logged_in:
     print('Logging in to Discord failed')
     exit(1)
+
+random.seed()
+
+games = requests.get(
+    'https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
+
+riotapi.set_region("NA")
+riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
+
+player = media.Player()
 
 
 def bot(message):
@@ -101,7 +104,7 @@ def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
 
 
-def invite(messsage):
+def invite(message):
     argname = message.content[8:]
     #TODO: join a server by invite. Need to make IGNORE list first
 
@@ -111,14 +114,12 @@ def join(message):
     #TODO: Join A Voice_Channel
 
 
-
 def listmusic(message):
     list = ""
-    files = [f for f in os.listdir('music') if os.path.isfile(f)]
+    files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
     for f in files:
-        list.append(str(f) + " || ")
-    client.send_message(message.channel, "```" + list + "```")
-
+        list += str(f) + " || "
+    client.send_message(message.channel, "```\n" + list[:-4] + "\n```")
 
 
 def lookup(message):
@@ -138,6 +139,26 @@ def lookup(message):
     t = threading.Thread(target=worker)
     t.daemon = True
     t.start()
+
+
+def play(message):
+    argname = message.content[6:]
+    songname = ''
+    if argname.length() < 3:
+        client.send_message(message.channel, '```Songname too short```')
+        return
+    try:
+        files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+        for f in files:
+            if f.startswith(argname):
+                songname = f
+                break
+        song = media.load('music/' + songname, streaming=False)
+        player.queue(song)
+        player.play()
+    except FileNotFoundError:
+        client.send_message(message.channel, '```No such file or directory```')
+
 
 
 def roll(message):
@@ -260,8 +281,26 @@ def on_message(message):
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
 
+    elif message.content.startswith('!listmusic'):
+        listmusic(message)
+
     elif message.content.startswith('!lookup'):
         lookup(message)
+
+    elif message.content.startswith('!next'):
+        player.next_source()
+
+    elif message.content.startswith('!pause'):
+        player.pause()
+
+    elif message.content.startswith('!play'):
+        play(message)
+
+    elif message.content.startswith('!resume'):
+        player.play()
+
+    elif message.content.startswith('!stop'):
+        player.pause()
 
     elif message.content.startswith('!roll'):
         roll(message)
@@ -305,7 +344,6 @@ def on_ready():
     print('Logged in as')
     print("Username " + client.user.name)
     print("ID: " + client.user.id)
-
 
 upTime = time.clock()
 client.run()
