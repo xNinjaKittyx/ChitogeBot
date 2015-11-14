@@ -144,7 +144,7 @@ def lookup(message):
 def play(message):
     argname = message.content[6:]
     songname = ''
-    if argname.length() < 3:
+    if argname.len() < 3:
         client.send_message(message.channel, '```Songname too short```')
         return
     try:
