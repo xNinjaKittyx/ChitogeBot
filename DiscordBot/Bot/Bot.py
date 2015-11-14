@@ -1,21 +1,22 @@
+import json
 import logging
+import random
+import re
 import requests
 import threading
-import random
 import time
-import json
+import os
+
 import discord
 from discord.utils import find
 import wikipedia
 from cassiopeia import riotapi
 from cassiopeia import type
-import re
+from pyglet import media
 
 __author__ = "Daniel Ahn"
-__version__ = "0.5"
+__version__ = "0.5.1"
 name = "ChitogeBot"
-
-random.seed()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -23,18 +24,22 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-games = requests.get(
-    'https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
-
-riotapi.set_region("NA")
-riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
-
 client = discord.Client()
 client.login('daniel.s.ahn@biola.edu', 'Daniel7415295051')
 
 if not client.is_logged_in:
     print('Logging in to Discord failed')
     exit(1)
+
+random.seed()
+
+games = requests.get(
+    'https://gist.githubusercontent.com/ZetaHunter/56f9e37455bbcdd7f2ef/raw/981703ac5ea835bdf4d418ec919c10af24d04f7e/games.json').json()
+
+riotapi.set_region("NA")
+riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
+
+player = media.Player()
 
 
 def bot(message):
@@ -50,8 +55,71 @@ def cinfo(message):
         client.send_message(message.channel, "```User: " + message.channel.user + "\nID: " + message.channel.id + "```")
 
 
+def debug(message):
+    argname = message.content[7:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(exec(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def exec(message):
+    argname = message.content[6:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(exec(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+def eval(message):
+    argname = message.content[6:]
+
+    def worker():
+        if message.author.id == "82221891191844864":
+            try:
+                client.send_message(message.channel, "```{}```".format(eval(argname)))
+            except SyntaxError as err:
+                client.send_message(message.channel, "```{}```".format(err))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
+
+
+def invite(message):
+    argname = message.content[8:]
+    #TODO: join a server by invite. Need to make IGNORE list first
+
+
+def join(message):
+    argname = message.content[6:]
+    #TODO: Join A Voice_Channel
+
+
+def listmusic(message):
+    list = ""
+    files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+    for f in files:
+        list += str(f) + " || "
+    client.send_message(message.channel, "```\n" + list[:-4] + "\n```")
 
 
 def lookup(message):
@@ -73,6 +141,26 @@ def lookup(message):
     t.start()
 
 
+def play(message):
+    argname = message.content[6:]
+    songname = ''
+    if argname.length() < 3:
+        client.send_message(message.channel, '```Songname too short```')
+        return
+    try:
+        files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+        for f in files:
+            if f.startswith(argname):
+                songname = f
+                break
+        song = media.load('music/' + songname, streaming=False)
+        player.queue(song)
+        player.play()
+    except FileNotFoundError:
+        client.send_message(message.channel, '```No such file or directory```')
+
+
+
 def roll(message):
     x = random.randint(1, 6)
     client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
@@ -85,13 +173,13 @@ def uptime(message):
 
     totalSec = int(time.clock() - upTime)
     if (totalSec > 60):
-        totalMin = totalSec % 60
-        totalSec -= (totalMin * 60)
+        totalMin = totalSec / 60
+        totalSec = totalSec - (totalMin * 60)
     if (totalMin > 60):
-        totalHr = totalMin % 60
-        totalMin -= (totalHr * 60)
+        totalHr = totalMin / 60
+        totalMin = totalMin - (totalHr * 60)
     if (totalHr > 24):
-        totalDay = totalHr % 24
+        totalDay = totalHr / 24
         totalHr -= (totalDay * 24)
     client.send_message(message.channel,
                         'ChitogeBot has been running for {} days, {} hours, {} minutes, and {} seconds '
@@ -175,6 +263,15 @@ def on_message(message):
     elif message.content.startswith('!cinfo'):
         cinfo(message)
 
+    elif message.content.startswith('!debug'):
+        debug(message)
+
+    elif message.content.startswith('!eval'):
+        eval(message)
+
+    elif message.content.startswith('!exec'):
+        exec(message)
+
     elif message.content.startswith('!help'):
         client.send_message(message.author, 'Type !help for help.')
         client.send_message(message.author, 'Type !hello for a hello message from the bot.')
@@ -184,8 +281,26 @@ def on_message(message):
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
 
+    elif message.content.startswith('!listmusic'):
+        listmusic(message)
+
     elif message.content.startswith('!lookup'):
         lookup(message)
+
+    elif message.content.startswith('!next'):
+        player.next_source()
+
+    elif message.content.startswith('!pause'):
+        player.pause()
+
+    elif message.content.startswith('!play'):
+        play(message)
+
+    elif message.content.startswith('!resume'):
+        player.play()
+
+    elif message.content.startswith('!stop'):
+        player.pause()
 
     elif message.content.startswith('!roll'):
         roll(message)
@@ -229,7 +344,6 @@ def on_ready():
     print('Logged in as')
     print("Username " + client.user.name)
     print("ID: " + client.user.id)
-
 
 upTime = time.clock()
 client.run()
