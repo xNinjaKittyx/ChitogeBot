@@ -7,23 +7,38 @@ ChitogeBot is a chatbot that is used for Discord servers.
 It is using the python API wrapper, discord.py that wraps around the DiscordAPI.
 
 # Commands
-!help - Private messages the list of commands.
+!help - Display this help message.
 
-!bot - Information about the bot.
+!cinfo - Channel Information
 
-!who <user> - gives information <user>.
+!who [user] - User Information
 
-!wiki <topic> - Gives the wiki page about <topic>.
+!wiki [topic] - Look for a wiki page\n
 
-!lookup <name> - Look up name on League of Legends.
+!listmusic - List all music files available on the bot
 
-!roll - Rolls a Die.
+!lookup [Summoner] - Find Summoner on LoL
+
+!next - Play the next song
+
+!pause - Pause the song
+
+!play [song] - Play a song
+
+!resume - Resume the player
+
+!stop - Stop the player - Currently not working
+
+!roll - Roll a die
+
+!uptime - Bot uptime
 
 # Todo List
 - !johncena - Find's author's voice channel and play johncena.
 - !join [channel] - Join that voice channel.
-- !music [filename] - play filename
-- !listmusic - List of Music Files on the server
+- So i Found out discord.py doesn't support joining voice channels yet.
+- Need to organize in different classes
+- Need to organize HELP command
 - !lookup - Find Rank Division
 - A Json file to keep track of ignored servers.
 - A json file to store a playlist (so in case of crash, it can return where it began
