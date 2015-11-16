@@ -44,3 +44,6 @@ It is using the python API wrapper, discord.py that wraps around the DiscordAPI.
 - A json file to store a playlist (so in case of crash, it can return where it began
 - This also means I need to put youtube API in here to autoplay it. (or use youtube-dl to grab an mp3 file and then play it.)
 - !ignoreserver - Ignore the server (Only executable by those with permission)
+- !changename - Change the bot's name (With permissions)
+- !changepic - Change the bot's profile pic
+- I need a configuration file with permissions. Some easy way to handle a list of unique IDs to figure out if I want to let someone do certain commands.
