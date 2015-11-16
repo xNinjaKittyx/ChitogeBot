@@ -1,4 +1,4 @@
-import json
+
 import logging
 import random
 import re
@@ -18,6 +18,12 @@ __author__ = "Daniel Ahn"
 __version__ = "0.5.1"
 name = "ChitogeBot"
 
+
+print("Welcome to ChitogeBot. Please type in your credentials.")
+username = input("Username: ")
+password = input("Password: ")
+
+
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
@@ -25,7 +31,10 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 client = discord.Client()
-client.login('daniel.s.ahn@biola.edu', 'Daniel7415295051')
+client.login(username, password)
+
+username = None
+password = None
 
 if not client.is_logged_in:
     print('Logging in to Discord failed')
@@ -42,6 +51,10 @@ riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 player = media.Player()
 
 
+###############
+#Info Commands#
+###############
+
 def bot(message):
     client.send_message(message.channel,
                         "Hi, I'm {name}. I am running version {version}.".format(name=name, version=__version__))
@@ -55,100 +68,25 @@ def cinfo(message):
         client.send_message(message.channel, "```User: " + message.channel.user + "\nID: " + message.channel.id + "```")
 
 
-def debug(message):
-    argname = message.content[7:]
-
-    if message.author.id == "82221891191844864":
-        try:
-            client.send_message(message.channel, "```{}```".format(eval(argname)))
-        except SyntaxError as err:
-            client.send_message(message.channel, "```{}```".format(err))
-
-
-def exec(message):
-    argname = message.content[6:]
-
-    if message.author.id == "82221891191844864":
-        try:
-            client.send_message(message.channel, "```{}```".format(exec(argname)))
-        except SyntaxError as err:
-            client.send_message(message.channel, "```{}```".format(err))
-
-
-def eval(message):
-    argname = message.content[6:]
-
-    if message.author.id == "82221891191844864":
-        try:
-            client.send_message(message.channel, "```{}```".format(eval(argname)))
-        except SyntaxError as err:
-            client.send_message(message.channel, "```{}```".format(err))
-
-
 def hello(message):
     client.send_message(message.channel, 'Hello {}-san!'.format(message.author.mention()))
 
 
-def invite(message):
-    argname = message.content[8:]
-    #TODO: join a server by invite. Need to make IGNORE list first
-
-
-def join(message):
-    argname = message.content[6:]
-    #TODO: Join A Voice_Channel
-
-
-def listmusic(message):
-    list = ""
-    files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
-    for f in files:
-        list += str(f) + " || "
-    client.send_message(message.channel, "```\n" + list[:-4] + "\n```")
-
-
-def lookup(message):
-    argname = message.content[8:]
-
-    def worker():
-        try:
-            summoner = riotapi.get_summoner_by_name(argname)
-            client.send_message(message.channel, "Name: {name}\nLevel: {level}\nRank: {rank}".format(name=summoner.name,
-                                                                                                     level=summoner.level,
-                                                                                                     rank=
-                                                                                                     summoner.leagues()[
-                                                                                                         0]))
-        except type.api.exception.APIError as e:
-            client.send_message(message.channel, 'Lookup Failed.\nError: ' + str(e.error_code))
-
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
-
-
-def play(message):
-    argname = message.content[6:]
-    songname = ''
-    if argname.len() < 3:
-        client.send_message(message.channel, '```Songname too short```')
-        return
-    try:
-        files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
-        for f in files:
-            if f.startswith(argname):
-                songname = f
-                break
-        song = media.load('music/' + songname, streaming=False)
-        player.queue(song)
-        player.play()
-    except FileNotFoundError:
-        client.send_message(message.channel, '```No such file or directory```')
-
-
-
-def roll(message):
-    x = random.randint(1, 6)
-    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
+def helpmsg(message):
+    client.send_message(message.author, '!help - Display this help message.\n' +
+                        '!cinfo - Channel Information\n' +
+                        '!who [user] - User Information\n' +
+                        '!wiki [topic] - Look for a wiki page\n' +
+                        '!listmusic - List all music files available on the bot\n' +
+                        '!lookup [Summoner] - Find Summoner on LoL\n' +
+                        '!next - Play the next song\n' +
+                        '!pause - Pause the song\n' +
+                        '!play [song] - Play a song\n' +
+                        '!resume - Resume the player' +
+                        '!stop - Stop the player - Currently not working\n' +
+                        '!roll - Roll a die\n' +
+                        '!uptime - Bot uptime\n' +
+                        'More to Come! Check https://github.com/xNinjaKittyx/ChitogeBot')
 
 
 def uptime(message):
@@ -211,6 +149,130 @@ def who(message):
             client.send_message(message.channel, "User not found.")
 
 
+##################
+# Debug Commands #
+##################
+
+def debug(message):
+    argname = message.content[7:]
+
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(eval(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
+
+
+def execute(message):
+    argname = message.content[6:]
+
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(exec(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
+
+
+def evaluate(message):
+    argname = message.content[6:]
+
+    if message.author.id == "82221891191844864":
+        try:
+            client.send_message(message.channel, "```{}```".format(eval(argname)))
+        except SyntaxError as err:
+            client.send_message(message.channel, "```{}```".format(err))
+
+
+##################
+# Music Commands #
+##################
+
+def join(message):
+    argname = message.content[6:]
+    #TODO: Join A Voice_Channel
+
+
+def listmusic(message):
+    list = ""
+    files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+    for f in files:
+        list += str(f) + " || "
+    client.send_message(message.channel, "```\n" + list[:-4] + "\n```")
+
+
+def play(message):
+    argname = message.content[6:]
+    songname = ''
+    if len(argname) < 3:
+        client.send_message(message.channel, '```Songname too short```')
+        return
+    try:
+        files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+        for f in files:
+            if f.startswith(argname):
+                songname = f
+                break
+        song = media.load('music/' + songname, streaming=False)
+        player.queue(song)
+        player.play()
+    except FileNotFoundError:
+        client.send_message(message.channel, '```No such file or directory```')
+
+
+################
+# Fun Commands #
+################
+
+def roll(message):
+    num = 6
+    arg = message.content[6:]
+
+    def isinteger(value):
+        try:
+            int(value)
+            return True
+        except ValueError:
+            return False
+
+    if isinteger(arg):
+        num = int(arg)
+
+    x = random.randint(1, num)
+    client.send_message(message.channel, '{} rolled a {}!'.format(message.author.mention(), x))
+
+
+def invite(message):
+    argname = message.content[8:]
+    #TODO: join a server by invite. Need to make IGNORE list first
+
+
+#################
+# Riot Commands #
+#################
+
+def lookup(message):
+    argname = message.content[8:]
+
+    def worker():
+        try:
+            summoner = riotapi.get_summoner_by_name(argname)
+            client.send_message(message.channel, "Name: {name}\nLevel: {level}\nRank: {rank}".format(name=summoner.name,
+                                                                                                     level=summoner.level,
+                                                                                                     rank=
+                                                                                                     summoner.leagues()[
+                                                                                                         0]))
+        except type.api.exception.APIError as e:
+            client.send_message(message.channel, 'Lookup Failed.\nError: ' + str(e.error_code))
+
+    t = threading.Thread(target=worker)
+    t.daemon = True
+    t.start()
+
+
+######################
+# Wikipedia Commands #
+######################
+
 def wiki(message):
     argname = message.content[6:]
 
@@ -234,12 +296,6 @@ def wiki(message):
     t.start()
 
 
-def cleverTalk(message):
-    def worker():
-        content = message.content()
-        re.sub(client.user.mention() + " ", "", content, count=1)
-
-
 @client.event
 def on_message(message):
     if message.content.startswith('!bot'):
@@ -252,26 +308,13 @@ def on_message(message):
         debug(message)
 
     elif message.content.startswith('!eval'):
-        eval(message)
+        evaluate(message)
 
     elif message.content.startswith('!exec'):
-        exec(message)
+        execute(message)
 
     elif message.content.startswith('!help'):
-        client.send_message(message.author, '!help - Display this help message.\n' +
-                            '!cinfo - Channel Information\n' +
-                            '!who [user] - User Information\n' +
-                            '!wiki [topic] - Look for a wiki page\n' +
-                            '!listmusic - List all music files available on the bot\n' +
-                            '!lookup [Summoner] - Find Summoner on LoL\n' +
-                            '!next - Play the next song\n' +
-                            '!pause - Pause the song\n' +
-                            '!play [song] - Play a song\n' +
-                            '!resume - Resume the player' +
-                            '!stop - Stop the player - Currently not working\n' +
-                            '!roll - Roll a die\n' +
-                            '!uptime - Bot uptime\n' +
-                            'More to Come! Check https://github.com/xNinjaKittyx/ChitogeBot')
+        helpmsg(message)
 
     elif message.content.startswith('Hello {}'.format(client.user.mention())):
         hello(message)
@@ -324,13 +367,13 @@ def on_message(message):
 
 @client.event
 def on_member_join(member):
-    channel = find(lambda chan: chan.name == 'public', member.server.channels)
+    channel = find(lambda chan: chan.is_default_channel() == True, member.server.channels)
     client.send_message(channel, 'Please welcome {name} to the server!'.format(name=member.mention()))
 
 
 @client.event
 def on_member_remove(member):
-    channel = find(lambda chan: chan.name == 'public', member.server.channels)
+    channel = find(lambda chan: chan.is_default_channel() == True, member.server.channels)
     client.send_message(channel, '{name} has left the server.'.format(name=member))
 
 
