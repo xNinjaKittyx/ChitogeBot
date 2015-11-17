@@ -47,3 +47,4 @@ It is using the python API wrapper, discord.py that wraps around the DiscordAPI.
 - !changename - Change the bot's name (With permissions)
 - !changepic - Change the bot's profile pic
 - I need a configuration file with permissions. Some easy way to handle a list of unique IDs to figure out if I want to let someone do certain commands.
+- Developing a new game
