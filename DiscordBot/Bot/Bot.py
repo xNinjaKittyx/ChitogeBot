@@ -1,7 +1,7 @@
 
+import json
 import logging
 import random
-import re
 import requests
 import threading
 import time
@@ -23,6 +23,17 @@ print("Welcome to ChitogeBot. Please type in your credentials.")
 username = input("Username: ")
 password = input("Password: ")
 
+if not os.path.exists('json'):
+    os.makedirs('json')
+
+if not os.path.isfile('json/ignore.json'):
+    with open('json/ignore.json', 'w',) as outfile:
+        json.dump({"servers": [], "channels": [], "users": []},
+                  outfile, indent=4)
+
+
+with open('json/ignore.json') as data_file:
+    ignore = json.load(data_file)
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -51,9 +62,66 @@ riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 player = media.Player()
 
 
-###############
-#Info Commands#
-###############
+##################
+# Admin Commands #
+##################
+
+def checkdev(message):
+    # Checks if the message is from me :)
+    if message.author.id == "82221891191844864":
+        return True
+    else:
+        return False
+
+
+def ignoreserver(message):
+    if not checkdev(message):
+        return
+    check = False  # True if already exists
+    for serverid in ignore["servers"]:
+        if serverid == message.channel.server.id:
+
+            check = True
+            break
+
+    ignore["servers"].append(message.channel.server.id)
+    client.send_message(message.channel, 'Server Ignored')
+    return
+
+
+def ignorechannel(message):
+    if not checkdev(message):
+        return
+    ignore["channel"].append(message.channel.server.id)
+    return
+
+
+def ignoreuser(message):
+    if not checkdev(message):
+        return
+    return
+
+
+def checkignorelist(message):
+    # If on the list, return true; if not, return false.
+    for serverid in ignore["servers"]:
+        if serverid == message.channel.server.id:
+            return True
+
+    for channelid in ignore["channels"]:
+        if channelid == message.channel.id:
+            return True
+
+    for userid in ignore["users"]:
+        if userid == message.author.id:
+            return True
+
+    return False
+
+
+#################
+# Info Commands #
+#################
 
 def bot(message):
     client.send_message(message.channel,
@@ -156,7 +224,7 @@ def who(message):
 def debug(message):
     argname = message.content[7:]
 
-    if message.author.id == "82221891191844864":
+    if checkdev(message):
         try:
             client.send_message(message.channel, "```{}```".format(eval(argname)))
         except SyntaxError as err:
@@ -166,7 +234,7 @@ def debug(message):
 def execute(message):
     argname = message.content[6:]
 
-    if message.author.id == "82221891191844864":
+    if checkdev(message):
         try:
             client.send_message(message.channel, "```{}```".format(exec(argname)))
         except SyntaxError as err:
@@ -176,7 +244,7 @@ def execute(message):
 def evaluate(message):
     argname = message.content[6:]
 
-    if message.author.id == "82221891191844864":
+    if checkdev(message):
         try:
             client.send_message(message.channel, "```{}```".format(eval(argname)))
         except SyntaxError as err:
@@ -298,6 +366,8 @@ def wiki(message):
 
 @client.event
 def on_message(message):
+    if checkignorelist(message):
+        return
     if message.content.startswith('!bot'):
         bot(message)
 
@@ -361,8 +431,8 @@ def on_message(message):
     elif message.content.startswith('#Tsunderes4Life'):
         client.send_message(message.channel, 'I like the way you think.')
 
-    elif message.content.startswith('{}'.format(client.user.mention())):
-        client.send_message(message.channel, 'You have mentioned me.')
+#    elif message.content.startswith('{}'.format(client.user.mention())):
+#        client.send_message(message.channel, 'You have mentioned me.')
 
 
 @client.event

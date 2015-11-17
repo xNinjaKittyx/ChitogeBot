@@ -1,0 +1,12 @@
+{
+    "servers": [
+        {
+            "id": "example"
+        }
+    ],
+    "channels": [
+        {
+            "id": "example"
+        }
+    ]
+}
