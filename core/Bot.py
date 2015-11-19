@@ -23,21 +23,21 @@ print("Welcome to ChitogeBot. Please type in your credentials.")
 username = input("Username: ")
 password = input("Password: ")
 
-if not os.path.exists('json'):
-    os.makedirs('json')
+if not os.path.exists('../json'):
+    os.makedirs('../json')
 
-if not os.path.isfile('json/ignore.json'):
-    with open('json/ignore.json', 'w',) as outfile:
+if not os.path.isfile('./json/ignore.json'):
+    with open('../json/ignore.json', 'w',) as outfile:
         json.dump({"servers": [], "channels": [], "users": []},
                   outfile, indent=4)
 
 
-with open('json/ignore.json') as data_file:
+with open('../json/ignore.json') as data_file:
     ignore = json.load(data_file)
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename='../discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
@@ -226,7 +226,7 @@ def debug(message):
 
     if checkdev(message):
         try:
-            client.send_message(message.channel, "```{}```".format(eval(argname)))
+            exec(argname)
         except SyntaxError as err:
             client.send_message(message.channel, "```{}```".format(err))
 
@@ -236,7 +236,7 @@ def execute(message):
 
     if checkdev(message):
         try:
-            client.send_message(message.channel, "```{}```".format(exec(argname)))
+            exec(argname)
         except SyntaxError as err:
             client.send_message(message.channel, "```{}```".format(err))
 
@@ -262,7 +262,7 @@ def join(message):
 
 def listmusic(message):
     list = ""
-    files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+    files = [f for f in os.listdir('../music') if os.path.isfile('../music/' + f)]
     for f in files:
         list += str(f) + " || "
     client.send_message(message.channel, "```\n" + list[:-4] + "\n```")
@@ -275,12 +275,12 @@ def play(message):
         client.send_message(message.channel, '```Songname too short```')
         return
     try:
-        files = [f for f in os.listdir('music') if os.path.isfile('music/' + f)]
+        files = [f for f in os.listdir('../music') if os.path.isfile('../music/' + f)]
         for f in files:
             if f.startswith(argname):
                 songname = f
                 break
-        song = media.load('music/' + songname, streaming=False)
+        song = media.load('../music/' + songname, streaming=False)
         player.queue(song)
         player.play()
     except FileNotFoundError:
