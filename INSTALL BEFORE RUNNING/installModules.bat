@@ -1,6 +1,6 @@
 @echo
-pip install discord.py
-pip install wikipedia
-pip install cassiopeia
-pip install pyglet
+pip install discord.py --upgrade
+pip install wikipedia --upgrade
+pip install cassiopeia --upgrade
+pip install pyglet --upgrade
 pause
