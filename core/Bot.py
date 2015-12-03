@@ -6,6 +6,7 @@ import requests
 import threading
 import time
 import os
+import sys
 
 import discord
 from discord.utils import find
@@ -14,19 +15,15 @@ from cassiopeia import riotapi
 from cassiopeia import type
 from pyglet import media
 
+
 __author__ = "Daniel Ahn"
 __version__ = "0.5.1"
 name = "ChitogeBot"
 
-
-print("Welcome to ChitogeBot. Please type in your credentials.")
-username = input("Username: ")
-password = input("Password: ")
-
 if not os.path.exists('../json'):
     os.makedirs('../json')
 
-if not os.path.isfile('./json/ignore.json'):
+if not os.path.isfile('../json/ignore.json'):
     with open('../json/ignore.json', 'w',) as outfile:
         json.dump({"servers": [], "channels": [], "users": []},
                   outfile, indent=4)
@@ -41,15 +38,22 @@ handler = logging.FileHandler(filename='../discord.log', encoding='utf-8', mode=
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
+print("Welcome to ChitogeBot. Please type in your credentials.")
+username = input("Username: ")
+password = input("Password: ")
+
 client = discord.Client()
-client.login(username, password)
+while not client.is_logged_in:
+    try:
+        client.login(username, password)
+    except discord.errors.LoginFailure:
+        print('Logging in to Discord failed')
+        print('Please try again!\n\n')
+        username = input("Username: ")
+        password = input("Password: ")
 
 username = None
 password = None
-
-if not client.is_logged_in:
-    print('Logging in to Discord failed')
-    exit(1)
 
 random.seed()
 
@@ -59,12 +63,17 @@ games = requests.get(
 riotapi.set_region("NA")
 riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 
+
 player = media.Player()
 
 
 ##################
 # Admin Commands #
 ##################
+
+def updatejsonfile():
+    with open('../json/ignore.json', 'w',) as outfile:
+        json.dump(ignore, outfile, indent=4)
 
 def checkdev(message):
     # Checks if the message is from me :)
@@ -75,17 +84,21 @@ def checkdev(message):
 
 
 def ignoreserver(message):
+    #This command is usable only for people listed in dev.
+    #If its already ignored, it will unignore.
     if not checkdev(message):
         return
-    check = False  # True if already exists
+    count = 0
     for serverid in ignore["servers"]:
         if serverid == message.channel.server.id:
-
-            check = True
-            break
-
+            ignore["servers"].pop(count)
+            client.send_message(message.channel, 'Server Unignored')
+            updatejsonfile()
+            return
+        count += 1
     ignore["servers"].append(message.channel.server.id)
     client.send_message(message.channel, 'Server Ignored')
+    updatejsonfile()
     return
 
 
@@ -93,12 +106,14 @@ def ignorechannel(message):
     if not checkdev(message):
         return
     ignore["channel"].append(message.channel.server.id)
+    updatejsonfile()
     return
 
 
 def ignoreuser(message):
     if not checkdev(message):
         return
+    updatejsonfile()
     return
 
 
@@ -366,22 +381,25 @@ def wiki(message):
 
 @client.event
 def on_message(message):
-    if checkignorelist(message):
+    if checkignorelist(message) and not checkdev(message):
         return
+
     if message.content.startswith('!bot'):
         bot(message)
-
-    elif message.content.startswith('!cinfo'):
-        cinfo(message)
-
+    ##################
+    # Admin Commands #
+    ##################
     elif message.content.startswith('!debug'):
         debug(message)
 
     elif message.content.startswith('!eval'):
         evaluate(message)
 
-    elif message.content.startswith('!exec'):
-        execute(message)
+    elif message.content.startswith('!ignoreserver'):
+        ignoreserver(message)
+
+    elif message.content.startswith('!cinfo'):
+        cinfo(message)
 
     elif message.content.startswith('!help'):
         helpmsg(message)
