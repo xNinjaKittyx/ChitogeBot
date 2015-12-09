@@ -17,7 +17,7 @@ from pyglet import media
 
 
 __author__ = "Daniel Ahn"
-__version__ = "0.5.1"
+__version__ = "0.6"
 name = "ChitogeBot"
 
 if not os.path.exists('../json'):
@@ -81,7 +81,12 @@ def checkdev(message):
         return True
     else:
         return False
-
+def checkPrivate(message):
+    # Checks if the message is a PM
+    if message.channel.is_private == True:
+        return True
+    else:
+        return False
 
 def ignoreserver(message):
     #This command is usable only for people listed in dev.
@@ -105,7 +110,16 @@ def ignoreserver(message):
 def ignorechannel(message):
     if not checkdev(message):
         return
-    ignore["channel"].append(message.channel.server.id)
+    count = 0
+    for channelid in ignore["channels"]:
+        if channelid == message.channel.id:
+            ignore["channels"].pop(count)
+            client.send_message(message.channel, 'Channel Unignored')
+            updatejsonfile()
+            return
+        count += 1
+    ignore["channels"].append(message.channel.id)
+    client.send_message(message.channel, 'Channel Ignored')
     updatejsonfile()
     return
 
@@ -113,7 +127,20 @@ def ignorechannel(message):
 def ignoreuser(message):
     if not checkdev(message):
         return
+    argname = message.content[12:]
+    member = find(lambda m: m.name == argname, message.server.members)
+    count = 0
+    for userid in ignore["users"]:
+        if userid == member.id:
+            ignore["users"].pop(count)
+            client.send_message(message.channel, 'I\'ll listen to ' + member)
+            updatejsonfile()
+            return
+        count += 1
+    ignore["channels"].append(member.id)
+    client.send_message(message.channel, 'Alright, I\'ll ignore ' + member)
     updatejsonfile()
+
     return
 
 
@@ -372,7 +399,7 @@ def wiki(message):
         except wikipedia.exceptions.RedirectError:
             client.send_message(message.channel, 'Redirect Error, Check Console.')
         except wikipedia.exceptions.WikipediaException:
-            client.send_message(message.channel, 'Something Wrong with wikipedia.')
+                client.send_message(message.channel, 'Something Wrong with wikipedia.')
 
     t = threading.Thread(target=worker)
     t.daemon = True
@@ -397,6 +424,12 @@ def on_message(message):
 
     elif message.content.startswith('!ignoreserver'):
         ignoreserver(message)
+
+    elif message.content.startswith('!ignorechannel'):
+        ignorechannel(message)
+
+    elif message.content.startswith('!ignoreuser'):
+        ignoreuser(message)
 
     elif message.content.startswith('!cinfo'):
         cinfo(message)
@@ -452,16 +485,29 @@ def on_message(message):
 #    elif message.content.startswith('{}'.format(client.user.mention())):
 #        client.send_message(message.channel, 'You have mentioned me.')
 
+def checkignorelistevent(chan):
+    #checkignorelist given a channel.
+    for serverid in ignore["servers"]:
+        if serverid == chan.server.id:
+            return True
+
+    for channelid in ignore["channels"]:
+        if channelid == chan.id:
+            return True
 
 @client.event
 def on_member_join(member):
-    channel = find(lambda chan: chan.is_default_channel() == True, member.server.channels)
+    channel = find(lambda chan: chan.name == 'public-chat', member.server.channels)
+    if checkignorelistevent(channel) == True:
+        return
     client.send_message(channel, 'Please welcome {name} to the server!'.format(name=member.mention()))
 
 
 @client.event
 def on_member_remove(member):
-    channel = find(lambda chan: chan.is_default_channel() == True, member.server.channels)
+    channel = find(lambda chan: chan.name == 'public-chat', member.server.channels)
+    if checkignorelistevent(channel) == True:
+        return
     client.send_message(channel, '{name} has left the server.'.format(name=member))
 
 
