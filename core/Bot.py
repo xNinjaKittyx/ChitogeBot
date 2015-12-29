@@ -66,6 +66,17 @@ riotapi.set_api_key("37a65ef7-6cfa-4d98-adc0-a3300b9cfc3a")
 
 player = media.Player()
 
+##############
+# Decorators #
+##############
+def display(func):
+    def inner(message):
+        ret = func(message)
+        client.send_message(message.channel, ret)
+        return
+    return inner
+
+
 
 ##################
 # Admin Commands #
@@ -75,36 +86,38 @@ def updatejsonfile():
     with open('../json/ignore.json', 'w',) as outfile:
         json.dump(ignore, outfile, indent=4)
 
+
 def checkdev(message):
     # Checks if the message is from me :)
     if message.author.id == "82221891191844864":
         return True
     else:
         return False
+
+
 def checkPrivate(message):
     # Checks if the message is a PM
-    if message.channel.is_private == True:
+    if message.channel.is_private is True:
         return True
     else:
         return False
 
+@display
 def ignoreserver(message):
-    #This command is usable only for people listed in dev.
-    #If its already ignored, it will unignore.
+    # This command is usable only for people listed in dev.
+    # If its already ignored, it will unignore.
     if not checkdev(message):
         return
     count = 0
     for serverid in ignore["servers"]:
         if serverid == message.channel.server.id:
             ignore["servers"].pop(count)
-            client.send_message(message.channel, 'Server Unignored')
             updatejsonfile()
-            return
+            return 'Server Unignored'
         count += 1
     ignore["servers"].append(message.channel.server.id)
-    client.send_message(message.channel, 'Server Ignored')
     updatejsonfile()
-    return
+    return 'Server Ignored'
 
 
 def ignorechannel(message):
@@ -485,8 +498,9 @@ def on_message(message):
 #    elif message.content.startswith('{}'.format(client.user.mention())):
 #        client.send_message(message.channel, 'You have mentioned me.')
 
+
 def checkignorelistevent(chan):
-    #checkignorelist given a channel.
+    # checkignorelist given a channel.
     for serverid in ignore["servers"]:
         if serverid == chan.server.id:
             return True
@@ -495,10 +509,11 @@ def checkignorelistevent(chan):
         if channelid == chan.id:
             return True
 
+
 @client.event
 def on_member_join(member):
     channel = find(lambda chan: chan.name == 'public-chat', member.server.channels)
-    if checkignorelistevent(channel) == True:
+    if checkignorelistevent(channel) is True:
         return
     client.send_message(channel, 'Please welcome {name} to the server!'.format(name=member.mention()))
 
@@ -506,7 +521,7 @@ def on_member_join(member):
 @client.event
 def on_member_remove(member):
     channel = find(lambda chan: chan.name == 'public-chat', member.server.channels)
-    if checkignorelistevent(channel) == True:
+    if checkignorelistevent(channel) is True:
         return
     client.send_message(channel, '{name} has left the server.'.format(name=member))
 
