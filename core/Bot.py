@@ -3,7 +3,6 @@ import asyncio
 import json
 import logging
 import random
-import requests
 import threading
 import time
 import os
@@ -156,7 +155,7 @@ def ignoreuser(message):
             updatejsonfile()
             return message.channel, 'I\'ll listen to ' + member.name
         count += 1
-    ignore["channels"].append(member.id)
+    ignore["users"].append(member.id)
 
     updatejsonfile()
     return message.channel, 'Alright, I\'ll ignore ' + member.name
@@ -352,7 +351,7 @@ async def join(message):
     channel = message.content[6:]
     global voiceclient
 
-    voice_channel = find(lambda c: c.name == channel, message.server.channels)
+    voice_channel = find(lambda c: c.name.startswith(channel), message.server.channels)
     if voice_channel.type is discord.ChannelType.text:
         return
     try:
@@ -369,21 +368,6 @@ async def join(message):
         print("Opus is not loaded.")
 
 
-@display
-def listmusic(message):
-    list = ""
-    files = [f for f in os.listdir('../music')
-             if os.path.isfile('../music/' + f)]
-    for f in files:
-        list += str(f) + " || "
-    return (message.channel, "```\n" + list[:-4] + "\n```")
-
-
-@display
-def play(message):
-    argname = message.content[6:]
-
-
 async def disconnect():
     global voiceclient
     global voiceclient_player
@@ -394,13 +378,21 @@ async def disconnect():
     voiceclient = 0
 
 
+def next():
+    '''Next Song'''
+
+
+def skip():
+    '''Stop the current playing song, and Start the next'''
+
+
 def stop():
     global voiceclient_player
     if voiceclient_player:
         voiceclient_player.stop()
 
 
-def yt(message):
+async def yt(message):
     global voiceclient
     global voiceclient_player
     if client.is_voice_connected() is False:
@@ -415,10 +407,11 @@ def yt(message):
         'noplaylist': True
     }
     try:
-        voiceclient_player = voiceclient.create_ytdl_player(link, options=ydl_opts)
+        voiceclient_player = await voiceclient.create_ytdl_player(link, options=ydl_opts, after=next())
         voiceclient_player.start()
-    except:
+    except Exception as e:
         print("Something went wrong with yt player")
+        print(e)
 
 ################
 # Fun Commands #
@@ -567,7 +560,7 @@ async def on_message(message):
         disconnect()
 
     elif message.content.startswith('!yt'):
-        yt(message)
+        await yt(message)
 
     elif message.content.startswith('!stop'):
         stop()
