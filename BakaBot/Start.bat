@@ -1,0 +1,2 @@
+py -m bot
+pause
