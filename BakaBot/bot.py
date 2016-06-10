@@ -3,7 +3,6 @@ import asyncio
 import json
 import logging
 import random
-import threading
 import os
 
 import discord
@@ -120,6 +119,7 @@ async def topreddit(subreddit: str):
     result = '\n'.join(str(submission) for submission in sr.get_top(limit=10))
     await bot.say(result)
 
+
 @bot.command()
 async def wiki(search: str):
     """ Grabs Wikipedia Article """
@@ -127,6 +127,7 @@ async def wiki(search: str):
 
 if __name__ == "__main__":
     bot.load_extension('modules.musicplayer')
+    bot.load_extension('modules.mal')
     bot.run('MTg5OTM5NTI0NjY1NzM3MjE3.Cjke-Q.Kj4uv-WyUeNCxtZ7yokSb66TxhE')
 # def checkPrivate(message):
 #     """Checks if the message is a PM"""
