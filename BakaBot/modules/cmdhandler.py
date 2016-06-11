@@ -42,6 +42,7 @@ async def command(message):
     if checkignorelist(message) and not checkdev(message):
         return
 
+
     if not message.content.startswith('~'):
         return
 

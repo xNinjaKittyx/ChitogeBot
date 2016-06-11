@@ -15,7 +15,6 @@ import praw
 # import cmdhandler as cmdhandler
 
 
-
 __author__ = "Daniel Ahn"
 __version__ = "0.6"
 name = "BakaBot"
@@ -130,6 +129,7 @@ if __name__ == "__main__":
     bot.load_extension('modules.mal')
     bot.load_extension('modules.pad')
     bot.run('MTg5OTM5NTI0NjY1NzM3MjE3.Cjke-Q.Kj4uv-WyUeNCxtZ7yokSb66TxhE')
+    bot.run('*')
 # def checkPrivate(message):
 #     """Checks if the message is a PM"""
 #     if message.channel.is_private is True:
