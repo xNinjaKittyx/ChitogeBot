@@ -128,6 +128,7 @@ async def wiki(search: str):
 if __name__ == "__main__":
     bot.load_extension('modules.musicplayer')
     bot.load_extension('modules.mal')
+    bot.load_extension('modules.pad')
     bot.run('MTg5OTM5NTI0NjY1NzM3MjE3.Cjke-Q.Kj4uv-WyUeNCxtZ7yokSb66TxhE')
 # def checkPrivate(message):
 #     """Checks if the message is a PM"""
