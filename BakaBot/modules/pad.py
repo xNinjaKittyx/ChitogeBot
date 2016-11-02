@@ -70,6 +70,5 @@ class PAD:
             await self.bot.say('No Monster Found')
 
 
-
 def setup(bot):
     bot.add_cog(PAD(bot))

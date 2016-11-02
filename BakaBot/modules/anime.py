@@ -65,11 +65,12 @@ class MalLink:
         return result
 
 
-class Mal:
+class Anime:
     """Searches up stuff on My Anime List
     """
     def __init__(self, bot):
         self.bot = bot
+        # TODO: REMOVE THIS TOO
         self.username = 'firefwing24'
         self.password = 'Danielahn1'
 
@@ -129,4 +130,4 @@ class Mal:
 
 
 def setup(bot):
-    bot.add_cog(Mal(bot))
+    bot.add_cog(Anime(bot))
