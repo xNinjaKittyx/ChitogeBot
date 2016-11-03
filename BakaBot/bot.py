@@ -32,7 +32,7 @@ with open('./json/ignore.json') as data_file:
 
 if not os.path.isfile('./json/setup.json'):
     with open('./json/setup.json', 'w',) as outfile:
-        json.dump({u"botkey": u"putkeyhere"},
+        json.dump({u"botkey": u"putkeyhere", u"MALUsername": u"InsertUser", u"MALPassword": u"Password"},
                   outfile, indent=4)
 with open('./json/setup.json') as data_file:
     setup = json.load(data_file)

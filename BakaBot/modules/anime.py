@@ -70,9 +70,10 @@ class Anime:
     """
     def __init__(self, bot):
         self.bot = bot
-        # TODO: REMOVE THIS TOO
-        self.username = 'firefwing24'
-        self.password = 'Danielahn1'
+        with open('./json/setup.json') as data_file:
+            setup = json.load(data_file)
+        self.username = setup["MALUsername"]
+        self.password = setup["MALPassword"]
 
     @commands.command(pass_context=True, no_pm=True)
     async def anime(self, ctx, *, anime: str):
