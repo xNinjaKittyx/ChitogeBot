@@ -1,4 +1,3 @@
-
 import asyncio
 import json
 import logging
@@ -10,7 +9,8 @@ from discord.ext import commands
 from discord.utils import find
 import wikipedia
 import modules.checks as checks
-import praw
+from cleverbot import Cleverbot
+import sqlite3
 # import BakaBot.modules.decorators as decorators
 # import cmdhandler as cmdhandler
 
@@ -19,16 +19,24 @@ __author__ = "Daniel Ahn"
 __version__ = "0.6"
 name = "BakaBot"
 
-if not os.path.exists('../json'):
-    os.makedirs('../json')
 
-if not os.path.isfile('../json/ignore.json'):
-    with open('../json/ignore.json', 'w',) as outfile:
+
+if not os.path.exists('./json'):
+    os.makedirs('./json')
+if not os.path.isfile('./json/ignore.json'):
+    with open('./json/ignore.json', 'w',) as outfile:
         json.dump({"servers": [], "channels": [], "users": []},
                   outfile, indent=4)
-
-with open('../json/ignore.json') as data_file:
+with open('./json/ignore.json') as data_file:
     ignore = json.load(data_file)
+
+if not os.path.isfile('./json/setup.json'):
+    with open('./json/setup.json', 'w',) as outfile:
+        json.dump({u"botkey": u"putkeyhere"},
+                  outfile, indent=4)
+with open('./json/setup.json') as data_file:
+    setup = json.load(data_file)
+
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.CRITICAL)
@@ -39,15 +47,34 @@ handler.setFormatter(logging.Formatter('%(asctime)s: %(levelname)s: \
 logger.addHandler(handler)
 
 random.seed()
+cb = Cleverbot()
 
-r = praw.Reddit(user_agent='/u/firefwing24 using for discord. Private Bot displaying top 10 of subreddits on demand.')
 
 
-description = '''An idiot Bot...'''
+description = '''Baka means Idiot in Japanese.'''
 bot = commands.Bot(command_prefix='~', description=description)
 
+modules = {
+    'modules.musicplayer',
+    'modules.anime',
+    'modules.pad',
+    'modules.cat',
+    'modules.osu',
+    'modules.safebooru',
+    'modules.fun',
+    'modules.wordDB',
+    'modules.XDCC',
+    'modules.ranks'
+
+}
+# TODO: Needs config with the following
+# 1 - The Bot Key Needs to be hidden.
+# 2 - Reddit User Agent must be a config thing.
+# 3 - Command Prefix should also be a config
+# 4 - Description probably?
 
 # probably needs to have a different json file
+
 def checkignorelistevent(chan):
     # checkignorelist given a channel.
     for serverid in ignore["servers"]:
@@ -61,20 +88,12 @@ def checkignorelistevent(chan):
 
 @bot.event
 async def on_member_join(member):
-    channel = find(lambda chan: chan.name == 'public-spam',
-                   member.server.channels)
-    if checkignorelistevent(channel) is True:
-        return
-    bot.say(channel, 'Please welcome {} to the server!'.format(member.mention))
+    await bot.send_message(member, "Welcome to {0}! Feel free to read the things in #announcement, and when you're ready, type ~normie in #openthegates".format(member.server.name))
 
 
 @bot.event
 async def on_member_remove(member):
-    channel = find(lambda chan: chan.name == 'public-spam',
-                   member.server.channels)
-    if checkignorelistevent(channel) is True:
-        return
-    bot.say(channel, '{} has left the server.'.format(member))
+    await bot.send_message(member.server.default_channel, '{} has left the server.'.format(member.name))
 
 
 @bot.event
@@ -94,42 +113,54 @@ async def on_message(message):
         return
     if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
         return
-    await bot.process_commands(message)
 
-
-@bot.command()
-async def roll(dice: str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await bot.say('Format has to be in NdN!')
+    if message.content.startswith(bot.user.mention):
+        try:
+            await bot.send_typing(message.channel)
+            response = cb.ask(message.content.split(None, 1)[1])
+            await bot.send_message(message.channel,
+                                   message.author.mention + ' ' + response)
+        except IndexError:
+            await bot.send_message(message.channel,
+                                   message.author.mention + ' Don\'t give me '
+                                   'the silent treatment.')
         return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await bot.say(result)
-
-
-@bot.command()
-async def topreddit(subreddit: str):
-    """ Grabs the top 10 of a given subreddit """
-    sr = r.get_subreddit(subreddit)
-
-    result = '\n'.join(str(submission) for submission in sr.get_top(limit=10))
-    await bot.say(result)
+    await bot.process_commands(message)
 
 
 @bot.command()
 async def wiki(search: str):
     """ Grabs Wikipedia Article """
-    wikipedia.summary(search, 3)
+    searchlist = wikipedia.search(search)
+    if len(searchlist) < 1:
+        await bot.say('No Results Found')
+    else:
+        page = wikipedia.page(searchlist[0])
+        await bot.say(wikipedia.summary(searchlist[0], 3))
+        await bot.say('URL:' + page.url)
+
+@bot.command(pass_context=True)
+async def status(ctx, *, s: str):
+    """ Changes Status """
+    if checks.checkdev(ctx.message):
+        await bot.change_presence(game=discord.Game(name=s))
+
 
 if __name__ == "__main__":
-    bot.load_extension('modules.musicplayer')
-    bot.load_extension('modules.mal')
-    bot.load_extension('modules.pad')
-    bot.run('MTg5OTM5NTI0NjY1NzM3MjE3.Cjke-Q.Kj4uv-WyUeNCxtZ7yokSb66TxhE')
-    bot.run('*')
+
+    print(setup["botkey"])
+    random.seed()
+    try:
+        for x in modules:
+            bot.load_extension(x)
+    except ImportError as e:
+        print(e)
+        print('[WARNING] : One or more modules did not import.')
+    bot.run(setup["botkey"])
+    #bot.run('*')
+
+
+
 # def checkPrivate(message):
 #     """Checks if the message is a PM"""
 #     if message.channel.is_private is True:

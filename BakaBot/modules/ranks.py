@@ -19,8 +19,8 @@ class Ranks:
             return
 
         normie = find(lambda r: r.name == "Normies", ctx.message.server.roles)
-        await self.bot.remove_roles(ctx.message.author, normie)
         await self.bot.add_roles(ctx.message.author, weeb)
+        await self.bot.remove_roles(ctx.message.author, normie)
 
     @commands.command(pass_context=True, no_pm=True)
     async def normie(self, ctx):
