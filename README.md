@@ -6,6 +6,7 @@ ChitogeBot is a chatbot that is used for Discord servers.
 
 It is using the python API wrapper, discord.py that wraps around the DiscordAPI.
 
+<<<<<<< HEAD
 # Commands
 
 All Commands start with the prefix ~
@@ -66,3 +67,6 @@ XDCC:
   
   
 It also has cleverbot integration, so if you type @[name of Bot] it will respond to you.
+=======
+The up-to-date version is in the develop branch.
+>>>>>>> refs/remotes/origin/master
