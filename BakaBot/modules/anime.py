@@ -2,6 +2,7 @@ import requests
 import xmltodict
 import asyncio
 import discord
+import json
 from discord.ext import commands
 
 
@@ -74,8 +75,10 @@ class Anime:
             setup = json.load(data_file)
         self.username = setup["MALUsername"]
         self.password = setup["MALPassword"]
+        print(self.username)
+        print(self.password)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True)
     async def anime(self, ctx, *, anime: str):
         """ Returns the top anime of whatever the user asked for."""
         anime.replace(' ', '_')
@@ -100,9 +103,9 @@ class Anime:
         elif r.status_code == 204:
             await self.bot.say("No Anime Found")
         else:
-            print("Something with wrong with MAL::Anime")
+            print("Not connected.")
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True)
     async def manga(self, ctx, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
         manga.replace(' ', '_')
@@ -127,7 +130,7 @@ class Anime:
         elif r.status_code == 204:
             await self.bot.say("No Manga Found")
         else:
-            print("Something with wrong with MAL::Manga")
+            print("Not connected.")
 
 
 def setup(bot):

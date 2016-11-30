@@ -2,5 +2,5 @@
 cls
 :start
 echo Starting Bot...
-py -m bot
+py -3 -m bot
 goto start

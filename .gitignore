@@ -101,4 +101,4 @@ $RECYCLE.BIN/
 *.lnk
 
 .idea/
-*.json
+BakaBot/json/setup.json

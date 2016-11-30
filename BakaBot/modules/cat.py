@@ -10,7 +10,7 @@ class Cat:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(no_pm=True)
+    @commands.command()
     async def meow(self):
         r = requests.get('http://random.cat/meow')
         if r.status_code is not 200:

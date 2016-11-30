@@ -3,14 +3,15 @@ import json
 import logging
 import random
 import os
+from io import BytesIO
 
 import discord
-from discord.ext import commands
-from discord.utils import find
+import requests
 import wikipedia
 import modules.checks as checks
+from discord.ext import commands
 from cleverbot import Cleverbot
-import sqlite3
+from PIL import Image
 # import BakaBot.modules.decorators as decorators
 # import cmdhandler as cmdhandler
 
@@ -52,7 +53,7 @@ cb = Cleverbot()
 
 
 description = '''Baka means Idiot in Japanese.'''
-bot = commands.Bot(command_prefix='~', description=description)
+bot = commands.Bot(command_prefix='~', description=description, pm_help=True)
 
 modules = {
     'modules.musicplayer',
@@ -64,7 +65,8 @@ modules = {
     'modules.fun',
     'modules.wordDB',
     'modules.XDCC',
-    'modules.ranks'
+    'modules.ranks',
+    'modules.gfycat'
 
 }
 # TODO: Needs config with the following
@@ -139,16 +141,33 @@ async def wiki(search: str):
         await bot.say(wikipedia.summary(searchlist[0], 3))
         await bot.say('URL:' + page.url)
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, hidden=True)
 async def status(ctx, *, s: str):
     """ Changes Status """
     if checks.checkdev(ctx.message):
         await bot.change_presence(game=discord.Game(name=s))
 
+@bot.command(pass_context=True, hidden=True)
+async def changeAvatar(ctx, *, url: str):
+    if checks.checkdev(ctx.message):
+        response = requests.get(url)
+
+        if response.content is None:
+            bot.send_message(ctx.message.author, "Picture conversion Failed")
+            return
+        try:
+            await bot.edit_profile(avatar=response.content)
+        except HTTPException as e:
+            print("Editing the profile failed.")
+
+@bot.command(pass_context=True, hidden=True)
+async def changeUsername(ctx, *, s: str):
+    if checks.checkdev(ctx.message):
+        await bot.edit_profile(username=s)
+
+
 
 if __name__ == "__main__":
-
-    print(setup["botkey"])
     random.seed()
     try:
         for x in modules:
@@ -157,7 +176,6 @@ if __name__ == "__main__":
         print(e)
         print('[WARNING] : One or more modules did not import.')
     bot.run(setup["botkey"])
-    #bot.run('*')
 
 
 
