@@ -104,8 +104,11 @@ async def on_ready():
     print('Logged in as')
     print("Username " + bot.user.name)
     print("ID: " + bot.user.id)
-    if not discord.opus.is_loaded():
+    if not discord.opus.is_loaded() and os.name == 'nt':
         discord.opus.load_opus("opus.dll")
+		
+    if not discord.opus.is_loaded() and os.name == 'posix':
+        discord.opus.load_opus("/usr/local/lib/libopus.so")
     print("Loaded Opus Library")
 
 

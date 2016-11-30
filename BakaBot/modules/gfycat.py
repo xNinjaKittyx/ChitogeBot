@@ -17,12 +17,27 @@ class Gfycat:
             print('Gyfcat returned ' + r.status_code)
             return
         giflist = json.loads(r.text)
+
         return giflist
 
     @commands.command()
     async def owgif(self):
-        giflist = self.gfylink("overwatch", 200)
-        ayylmao = random.randint(0,199)
+        giflist = self.gfylink("overwatch", 100)
+
+        if not giflist:
+            print('giflist not loaded correctly')
+            return
+        ayylmao = random.randint(0,99)
+        if not giflist["gfycats"][ayylmao]["gfyName"]:
+            if not giflist["gfycats"][ayylmao]:
+                if not giflist["gfycats"]:
+                    print('gfycats not loaded correctly')
+                    return
+                print('ayylmao has something wrong with it')
+                return
+            print('gfyName returned null')
+            return
+
         gif = giflist["gfycats"][ayylmao]["gfyName"]
         link = "https://gfycat.com/" + gif
         await self.bot.say(link)

@@ -81,8 +81,8 @@ class Anime:
     @commands.command(pass_context=True)
     async def anime(self, ctx, *, anime: str):
         """ Returns the top anime of whatever the user asked for."""
-        anime.replace(' ', '_')
-        url = 'http://myanimelist.net/api/anime/search.xml?q=' + anime
+        url = 'https://' + self.username + ":" + self.password + \
+              '@myanimelist.net/api/anime/search.xml?q=' + anime.replace(' ', '_')
         r = requests.get(url, auth=(self.username, self.password))
         if r.status_code == 200:
             animelist = xmltodict.parse(r.content)
@@ -109,7 +109,8 @@ class Anime:
     async def manga(self, ctx, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
         manga.replace(' ', '_')
-        url = 'http://myanimelist.net/api/manga/search.xml?q=' + manga
+        url = 'https://' + self.username + ":" + self.password + \
+               'myanimelist.net/api/manga/search.xml?q=' + manga
         r = requests.get(url, auth=(self.username, self.password))
         if r.status_code == 200:
             mangalist = xmltodict.parse(r.content)
