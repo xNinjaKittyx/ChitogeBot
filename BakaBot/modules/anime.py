@@ -89,6 +89,11 @@ class Anime:
             try:
                 result = animelist['anime']['entry'][0]
                 final = MalLink(result, 1)
+                x = 1
+                while final.type is not 'TV' or final.type is not 'Movie':
+                    result = animelist['anime']['entry'][x]
+                    final = MalLink(result, 1)
+                    x += 1
                 await self.bot.say(final.getinfo())
 
             except KeyError:
@@ -110,7 +115,7 @@ class Anime:
         """ Returns the top manga of whatever the user asked for."""
         manga.replace(' ', '_')
         url = 'https://' + self.username + ":" + self.password + \
-               'myanimelist.net/api/manga/search.xml?q=' + manga
+               '@myanimelist.net/api/manga/search.xml?q=' + manga
         r = requests.get(url, auth=(self.username, self.password))
         if r.status_code == 200:
             mangalist = xmltodict.parse(r.content)
