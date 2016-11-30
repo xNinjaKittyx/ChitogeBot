@@ -41,7 +41,9 @@ class Safebooru:
                 await self.bot.say(weeblist['posts']['post'][chosenone]['@file_url'])
             else:
                 page = random.randint(0, numOfPages)
-                weeblist = self.getlink(link + '&pid=' + str(page))
+                # Avoiding oversearching, and cutting the page limit to 3.
+                # Sometimes really unrelated stuff gets put in.
+                weeblist = self.getlink(link + '&pid=' + str(min(3,page)))
                 if page == numOfPages:
                     chosenone = random.randint(0, min(99, remaining))
                     await self.bot.say(weeblist['posts']['post'][chosenone]['@file_url'])
