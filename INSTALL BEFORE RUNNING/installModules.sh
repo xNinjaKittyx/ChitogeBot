@@ -6,3 +6,4 @@ pip3 install requests --upgrade
 pip3 install xmltodict --upgrade
 pip3 install cleverbot --upgrade
 pip3 install Pillow --upgrade
+sudo apt-get install ffmpeg
