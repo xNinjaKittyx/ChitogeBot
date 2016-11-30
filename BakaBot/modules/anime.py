@@ -2,6 +2,7 @@ import requests
 import xmltodict
 import asyncio
 import discord
+import json
 from discord.ext import commands
 
 
@@ -65,15 +66,19 @@ class MalLink:
         return result
 
 
-class Mal:
+class Anime:
     """Searches up stuff on My Anime List
     """
     def __init__(self, bot):
         self.bot = bot
-        self.username = 'firefwing24'
-        self.password = 'Danielahn1'
+        with open('./json/setup.json') as data_file:
+            setup = json.load(data_file)
+        self.username = setup["MALUsername"]
+        self.password = setup["MALPassword"]
+        print(self.username)
+        print(self.password)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True)
     async def anime(self, ctx, *, anime: str):
         """ Returns the top anime of whatever the user asked for."""
         anime.replace(' ', '_')
@@ -98,9 +103,9 @@ class Mal:
         elif r.status_code == 204:
             await self.bot.say("No Anime Found")
         else:
-            print("Something with wrong with MAL::Anime")
+            print("Not connected.")
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True)
     async def manga(self, ctx, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
         manga.replace(' ', '_')
@@ -125,8 +130,8 @@ class Mal:
         elif r.status_code == 204:
             await self.bot.say("No Manga Found")
         else:
-            print("Something with wrong with MAL::Manga")
+            print("Not connected.")
 
 
 def setup(bot):
-    bot.add_cog(Mal(bot))
+    bot.add_cog(Anime(bot))

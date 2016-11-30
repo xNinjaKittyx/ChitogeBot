@@ -1,7 +1,9 @@
 @echo
-pip install git+https://github.com/Rapptz/discord.py@async --upgrade
+pip install -U discord.py[voice]
 pip install wikipedia --upgrade
-pip install cassiopeia --upgrade
 pip install youtube-dl --upgrade
-pip install praw --upgrade
+pip install requests --upgrade
+pip install xmltodict --upgrade
+pip install cleverbot --upgrade
+pip install Pillow --upgrade
 pause
