@@ -1,5 +1,4 @@
 import discord
-import json
 
 
 def checkdev(message):
@@ -8,7 +7,6 @@ def checkdev(message):
         return True
     else:
         return False
-
 
 def checkignorelist(message, ignore):
     """If on the list, return true; if not, return false."""

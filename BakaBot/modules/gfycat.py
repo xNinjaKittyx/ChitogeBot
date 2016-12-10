@@ -28,15 +28,6 @@ class Gfycat:
             print('giflist not loaded correctly')
             return
         ayylmao = random.randint(0,99)
-        if not giflist["gfycats"][ayylmao]["gfyName"]:
-            if not giflist["gfycats"][ayylmao]:
-                if not giflist["gfycats"]:
-                    print('gfycats not loaded correctly')
-                    return
-                print('ayylmao has something wrong with it')
-                return
-            print('gfyName returned null')
-            return
 
         gif = giflist["gfycats"][ayylmao]["gfyName"]
         link = "https://gfycat.com/" + gif

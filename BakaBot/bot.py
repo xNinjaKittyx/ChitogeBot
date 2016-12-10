@@ -33,14 +33,19 @@ with open('./json/ignore.json') as data_file:
 
 if not os.path.isfile('./json/setup.json'):
     with open('./json/setup.json', 'w',) as outfile:
-        json.dump({u"botkey": u"putkeyhere", u"MALUsername": u"InsertUser", u"MALPassword": u"Password"},
+        json.dump({u"botkey": u"putkeyhere",
+                   u"MALUsername": u"InsertUser",
+                   u"MALPassword": u"Password",
+                   u"GoogleAPIKey": u"PutKeyHere",
+                   u"DarkSkyAPIKey": u"PutAPIKeyHere",
+                   u"Prefix": u"~"},
                   outfile, indent=4)
 with open('./json/setup.json') as data_file:
-    setup = json.load(data_file)
+    settings = json.load(data_file)
 
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.CRITICAL)
+logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='../discord.log',
                               encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s: %(levelname)s: \
@@ -53,7 +58,7 @@ cb = Cleverbot()
 
 
 description = '''Baka means Idiot in Japanese.'''
-bot = commands.Bot(command_prefix='~', description=description, pm_help=True)
+bot = commands.Bot(command_prefix=settings["Prefix"], description=description, pm_help=True)
 
 modules = {
     'modules.musicplayer',
@@ -66,7 +71,9 @@ modules = {
     'modules.wordDB',
     'modules.XDCC',
     'modules.ranks',
-    'modules.gfycat'
+    'modules.gfycat',
+    'modules.weather',
+    'modules.xkcd'
 
 }
 # TODO: Needs config with the following
@@ -106,7 +113,7 @@ async def on_ready():
     print("ID: " + bot.user.id)
     if not discord.opus.is_loaded() and os.name == 'nt':
         discord.opus.load_opus("opus.dll")
-		
+
     if not discord.opus.is_loaded() and os.name == 'posix':
         discord.opus.load_opus("/usr/local/lib/libopus.so")
     print("Loaded Opus Library")
@@ -120,8 +127,8 @@ async def on_message(message):
         return
 
     if message.content.startswith(bot.user.mention):
+        await bot.send_typing(message.channel)
         try:
-            await bot.send_typing(message.channel)
             response = cb.ask(message.content.split(None, 1)[1])
             await bot.send_message(message.channel,
                                    message.author.mention + ' ' + response)
@@ -134,7 +141,7 @@ async def on_message(message):
 
 
 @bot.command()
-async def wiki(search: str):
+async def wiki(*, search: str):
     """ Grabs Wikipedia Article """
     searchlist = wikipedia.search(search)
     if len(searchlist) < 1:
@@ -178,7 +185,7 @@ if __name__ == "__main__":
     except ImportError as e:
         print(e)
         print('[WARNING] : One or more modules did not import.')
-    bot.run(setup["botkey"])
+    bot.run(settings["botkey"])
 
 
 

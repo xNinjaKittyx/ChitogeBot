@@ -1,6 +1,7 @@
 import asyncio
-import discord
 import random
+
+import discord
 from discord.ext import commands
 
 
@@ -8,13 +9,18 @@ class Fun:
 
     def __init__(self, bot):
         self.bot = bot
+        self.heroes = ['Genji', 'McCree', 'Pharrah', 'Reaper', 'Soldier 76',
+                       'Tracer', 'Bastion', 'Hanzo', 'Junkrat', 'Mei',
+                       'Torbjorn', 'Widowmaker', 'D.va', 'Reinhardt', 'Roadhog',
+                       'Winston','Zarya', 'Lucio', 'Mercy',
+                       'Symmetra', 'Zenyatta']
 
     @commands.command()
     async def roll(self, dice: str):
         """Rolls a dice in NdN format."""
         try:
             rolls, limit = map(int, dice.split('d'))
-        except Exception:
+        except ValueError:
             await self.bot.say('Format has to be in NdN!')
             return
 
@@ -43,23 +49,14 @@ class Fun:
     @commands.command()
     async def overwatch(self):
         """ RNG OVERWATCH """
-        heroes = ['Genji', 'McCree', 'Pharrah', 'Reaper', 'Soldier 76',
-                  'Tracer', 'Bastion', 'Hanzo', 'Junkrat', 'Mei', 'Torbjorn',
-                  'Widowmaker', 'D.va', 'Reinhardt', 'Roadhog', 'Winston',
-                  'Zarya', 'Lucio', 'Mercy', 'Symmetra', 'Zenyatta']
-        await self.bot.say("Play {}!".format(random.choice(heroes)))
+        await self.bot.say("Play {}!".format(random.choice(self.heroes)))
 
     @commands.command()
     async def OWTeam(self, num: int):
-        heroes = ['Genji', 'McCree', 'Pharrah', 'Reaper', 'Soldier 76',
-                  'Tracer', 'Bastion', 'Hanzo', 'Junkrat', 'Mei', 'Torbjorn',
-                  'Widowmaker', 'D.va', 'Reinhardt', 'Roadhog', 'Winston',
-                  'Zarya', 'Lucio', 'Mercy', 'Symmetra', 'Zenyatta']
-        result = ""
-        for x in range(num):
-            result += random.choice(heroes) + " "
-
-        await self.bot.say("Here's your teamcomp! Good luck!\n{}".format(result))
+        """ Get a random OW Team """
+        result = [random.choice(self.heroes) for x in range(num)]
+        await self.bot.say("Here's your teamcomp! Good luck!\n" +
+                           "{}".format(" ".join(result)))
 
 
     @commands.command(pass_context=True)
@@ -70,8 +67,10 @@ class Fun:
 
     @commands.command()
     async def brainpower(self):
-        """"""
-        await self.bot.say("O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A- JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA")
+        """ ADRENALINE IS PUMPING """
+        await self.bot.say("O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo " +
+                           "AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-" +
+                           " JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA")
 
 def setup(bot):
     bot.add_cog(Fun(bot))

@@ -1,17 +1,23 @@
+""" To Get an Anime or Manga from MyAnimeList"""
+
+import asyncio
+import json
+
 import requests
 import xmltodict
-import asyncio
+
 import discord
-import json
 from discord.ext import commands
 
 
 class MalLink:
+    """ Any Instance of a MAL API XML document"""
+   # pylint: disable=too-many-instance-attributes,c0103
     def __init__(self, info, num):
         self.id = info['id']
         self.title = info['title']
         self.english = info['english']
-        self.synonyms = info['synonyms']
+        # self.synonyms = info['synonyms']
         if num == 1:
             self.episodes = info['episodes']
         elif num == 2:
@@ -20,19 +26,22 @@ class MalLink:
         self.score = info['score']
         self.type = info['type']
         self.status = info['status']
-        self.start_date = info['start_date']
-        self.end_date = info['end_date']
+        # self.start_date = info['start_date']
+        # self.end_date = info['end_date']
         self.synopsis = info['synopsis']
         self.image = info['image']
         self.num = num
 
     def getlink(self):
+        """Getter Function for Anime or Manga Link from MAL"""
+
         if self.num == 1:
             return str('<http://myanimelist.net/anime/' + str(self.id) + '>')
         elif self.num == 2:
             return str('<http://myanimelist.net/manga/' + str(self.id) + '>')
 
     def getinfo(self):
+        """ Get the Info Message of the MalLink Class"""
         if self.num == 1:
             result = ('`Title:` **{0}**\n'
                       '`English Title:` {1}\n'
@@ -67,33 +76,32 @@ class MalLink:
 
 
 class Anime:
-    """Searches up stuff on My Anime List
-    """
+    """Searches up stuff on My Anime List"""
+
     def __init__(self, bot):
         self.bot = bot
         with open('./json/setup.json') as data_file:
-            setup = json.load(data_file)
-        self.username = setup["MALUsername"]
-        self.password = setup["MALPassword"]
-        print(self.username)
-        print(self.password)
+            settings = json.load(data_file)
+        self.username = settings["MALUsername"]
+        self.password = settings["MALPassword"]
 
-    @commands.command(pass_context=True)
-    async def anime(self, ctx, *, anime: str):
+    @commands.command()
+    async def anime(self, *, anime: str):
         """ Returns the top anime of whatever the user asked for."""
+
         url = 'https://' + self.username + ":" + self.password + \
               '@myanimelist.net/api/anime/search.xml?q=' + anime.replace(' ', '_')
-        r = requests.get(url, auth=(self.username, self.password))
-        if r.status_code == 200:
-            animelist = xmltodict.parse(r.content)
+        req = requests.get(url, auth=(self.username, self.password))
+        if req.status_code == 200:
+            animelist = xmltodict.parse(req.content)
             try:
                 result = animelist['anime']['entry'][0]
                 final = MalLink(result, 1)
-                x = 1
+                entry = 1
                 while final.type is not 'TV' or final.type is not 'Movie':
-                    result = animelist['anime']['entry'][x]
+                    result = animelist['anime']['entry'][entry]
                     final = MalLink(result, 1)
-                    x += 1
+                    entry += 1
                 await self.bot.say(final.getinfo())
 
             except KeyError:
@@ -105,20 +113,21 @@ class Anime:
             else:
                 print("Something with wrong with MAL::Anime")
 
-        elif r.status_code == 204:
+        elif req.status_code == 204:
             await self.bot.say("No Anime Found")
         else:
             print("Not connected.")
 
-    @commands.command(pass_context=True)
-    async def manga(self, ctx, *, manga: str):
+    @commands.command()
+    async def manga(self, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
+
         manga.replace(' ', '_')
         url = 'https://' + self.username + ":" + self.password + \
                '@myanimelist.net/api/manga/search.xml?q=' + manga
-        r = requests.get(url, auth=(self.username, self.password))
-        if r.status_code == 200:
-            mangalist = xmltodict.parse(r.content)
+        req = requests.get(url, auth=(self.username, self.password))
+        if req.status_code == 200:
+            mangalist = xmltodict.parse(req.content)
             try:
                 result = mangalist['manga']['entry'][0]
                 final = MalLink(result, 2)
@@ -133,11 +142,12 @@ class Anime:
             else:
                 print("Something with wrong with MAL::Manga")
 
-        elif r.status_code == 204:
+        elif req.status_code == 204:
             await self.bot.say("No Manga Found")
         else:
             print("Not connected.")
 
 
 def setup(bot):
+    """Setup Anime.py"""
     bot.add_cog(Anime(bot))
