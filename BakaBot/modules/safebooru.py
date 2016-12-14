@@ -21,8 +21,8 @@ class Safebooru:
 
     @commands.command(pass_context=True, no_pm=True)
     async def safebooru(self, ctx, *, search: str):
-        link = ('http://safebooru.org/index.php?page=dapi&s=post&q=index' +
-                '&tags=' + search.replace(' ', '_'))
+        link = ("http://safebooru.org/index.php?page=dapi&s=post&q=index" +
+                "&tags=" + search.replace(' ', '_'))
         weeblist = self.getlink(link)
         numOfResults = int(weeblist['posts']['@count'])
 

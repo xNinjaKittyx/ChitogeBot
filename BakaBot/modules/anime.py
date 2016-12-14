@@ -36,9 +36,9 @@ class MalLink:
         """Getter Function for Anime or Manga Link from MAL"""
 
         if self.num == 1:
-            return str('<http://myanimelist.net/anime/' + str(self.id) + '>')
+            return str("<http://myanimelist.net/anime/" + str(self.id) + '>')
         elif self.num == 2:
-            return str('<http://myanimelist.net/manga/' + str(self.id) + '>')
+            return str("<http://myanimelist.net/manga/" + str(self.id) + '>')
 
     def getinfo(self):
         """ Get the Info Message of the MalLink Class"""
@@ -91,14 +91,14 @@ class Anime:
 
         url = 'https://' + self.username + ":" + self.password + \
               '@myanimelist.net/api/anime/search.xml?q=' + anime.replace(' ', '_')
-        req = requests.get(url, auth=(self.username, self.password))
+        req = requests.get(url)
         if req.status_code == 200:
             animelist = xmltodict.parse(req.content)
             try:
                 result = animelist['anime']['entry'][0]
                 final = MalLink(result, 1)
                 entry = 1
-                while final.type is not 'TV' or final.type is not 'Movie':
+                while final.type != 'TV' and final.type != 'Movie':
                     result = animelist['anime']['entry'][entry]
                     final = MalLink(result, 1)
                     entry += 1
@@ -110,8 +110,6 @@ class Anime:
                 result = animelist['anime']['entry']
                 final = MalLink(result, 1)
                 await self.bot.say(final.getinfo())
-            else:
-                print("Something with wrong with MAL::Anime")
 
         elif req.status_code == 204:
             await self.bot.say("No Anime Found")
@@ -139,8 +137,6 @@ class Anime:
                 result = mangalist['manga']['entry']
                 final = MalLink(result, 2)
                 await self.bot.say(final.getinfo())
-            else:
-                print("Something with wrong with MAL::Manga")
 
         elif req.status_code == 204:
             await self.bot.say("No Manga Found")
