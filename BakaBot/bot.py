@@ -19,8 +19,6 @@ __author__ = "Daniel Ahn"
 __version__ = "0.6"
 name = "BakaBot"
 
-sys.stdout = open('./rin.log', 'w')
-
 
 if not os.path.exists('./json'):
     os.makedirs('./json')
@@ -46,7 +44,7 @@ with open('./json/setup.json') as data_file:
 logging.basicConfig(filename='rin.log', level=logging.WARNING)
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 handler = logging.FileHandler(filename='../discord.log',
                               encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s: %(levelname)s: \
