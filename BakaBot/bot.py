@@ -3,8 +3,7 @@ import json
 import logging
 import random
 import os
-from io import BytesIO
-import sys
+import time
 
 import discord
 import requests
@@ -13,6 +12,7 @@ import modules.checks as checks
 from discord.ext import commands
 from cleverbot import Cleverbot
 from PIL import Image
+import log
 
 
 __author__ = "Daniel Ahn"
@@ -56,9 +56,11 @@ logger.addHandler(handler)
 random.seed()
 cb = Cleverbot()
 
-
+prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
-bot = commands.Bot(command_prefix=settings["Prefix"], description=description, pm_help=True)
+bot = commands.Bot(command_prefix=prefix, description=description, pm_help=True)
+initialtime = time.time()
+
 
 modules = {
     'modules.musicplayer',
@@ -73,12 +75,10 @@ modules = {
     'modules.ranks',
     'modules.gfycat',
     'modules.weather',
-    'modules.xkcd'
+    'modules.xkcd',
+    'modules.overwatch'
 
 }
-# TODO: Needs config with the following
-# 3 - Command Prefix should also be a config
-# 4 - Description probably?
 
 def checkignorelistevent(chan):
     # checkignorelist given a channel.
@@ -94,29 +94,34 @@ def checkignorelistevent(chan):
 @bot.event
 async def on_member_join(member):
     await bot.send_message(member, "Welcome to {0}! Feel free to read the things in #announcement, and when you're ready, type ~normie in #openthegates".format(member.server.name))
+    log.output(member.name + " has joined the server.")
 
 
 @bot.event
 async def on_member_remove(member):
     await bot.send_message(member.server.default_channel, '{} has left the server.'.format(member.name))
+    log.output(member.name + " has left the server.")
 
 
 @bot.event
 async def on_ready():
 
-    print('Logged in as')
-    print("Username " + bot.user.name)
-    print("ID: " + bot.user.id)
+    log.output('Logged in as')
+    log.output("Username " + bot.user.name)
+    log.output("ID: " + bot.user.id)
     if not discord.opus.is_loaded() and os.name == 'nt':
         discord.opus.load_opus("opus.dll")
 
     if not discord.opus.is_loaded() and os.name == 'posix':
         discord.opus.load_opus("/usr/local/lib/libopus.so")
-    print("Loaded Opus Library")
+    log.output("Loaded Opus Library")
+    initialtime = time.time()
 
 
 @bot.event
 async def on_message(message):
+    if message.content.startswith(prefix):
+        log.output(message.author.name + " attempted to use the command: " + message.content)
     if message.author == bot.user:
         return
     if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
@@ -125,7 +130,7 @@ async def on_message(message):
     if message.content.startswith(bot.user.mention):
         await bot.send_typing(message.channel)
         try:
-            response = cb.ask(message.content.split(None, 1)[1])
+            response = cb.ask(message.content.split(' ', 1)[1])
             await bot.send_message(message.channel,
                                    message.author.mention + ' ' + response)
         except IndexError:
@@ -146,6 +151,57 @@ async def wiki(*, search: str):
         page = wikipedia.page(searchlist[0])
         await bot.say(wikipedia.summary(searchlist[0], 3))
         await bot.say('URL:' + page.url)
+
+@bot.command()
+async def uptime():
+    """ Displays Uptime """
+    seconds = int(time.time() - initialtime)
+    minutes = 0
+    hours = 0
+    days = 0
+    output = ""
+    if seconds > 59:
+        minutes = int(seconds / 60)
+        seconds -= minutes * 60
+
+    if minutes > 59:
+        hours = int(minutes/60)
+        minutes -= hours * 60
+
+    if hours > 23:
+        days = int(hours/24)
+        hours -= days * 24
+
+    if seconds == 1:
+        output = " {} second.".format(seconds) + output
+    elif seconds == 0:
+        pass
+    else:
+        output = " {} seconds.".format(seconds) + output
+
+    if minutes == 1:
+        output = " {} minute,".format(minutes) + output
+    elif minutes == 0:
+        pass
+    else:
+        output = " {} minutes,".format(minutes) + output
+
+    if hours == 1:
+        output = " {} hour,".format(hours) + output
+    elif hours == 0:
+        pass
+    else:
+        output = " {} hours,".format(hours) + output
+
+    if days == 1:
+        output = " {} day,".format(days) + output
+    elif days == 0:
+        pass
+    else:
+        output = " {} days,".format(days) + output
+
+    await bot.say("*This Bot has been alive for" + output +  "*")
+
 
 @bot.command(pass_context=True, hidden=True)
 async def status(ctx, *, s: str):
@@ -182,16 +238,3 @@ if __name__ == "__main__":
         print(e)
         print('[WARNING] : One or more modules did not import.')
     bot.run(settings["botkey"])
-
-
-    # ##################
-    # # Admin Commands #
-    # ##################
-    # elif message.content.startswith('!eval'):
-    #     await evaluate(message)
-    #
-    # elif message.content.startswith('!uptime'):
-    #     await uptime(message)
-    #
-    # elif message.content.startswith('!who'):
-    #     await who(message)

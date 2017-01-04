@@ -9,11 +9,6 @@ class Fun:
 
     def __init__(self, bot):
         self.bot = bot
-        self.heroes = ['Genji', 'McCree', 'Pharrah', 'Reaper', 'Soldier 76',
-                       'Tracer', 'Bastion', 'Hanzo', 'Junkrat', 'Mei',
-                       'Torbjorn', 'Widowmaker', 'D.va', 'Reinhardt', 'Roadhog',
-                       'Winston','Zarya', 'Lucio', 'Mercy',
-                       'Symmetra', 'Zenyatta']
 
     @commands.command()
     async def roll(self, dice: str):
@@ -45,18 +40,6 @@ class Fun:
                    'Outlook not so good', 'Very doubtful']
 
         await self.bot.say(random.choice(answers))
-
-    @commands.command()
-    async def overwatch(self):
-        """ RNG OVERWATCH """
-        await self.bot.say("Play {}!".format(random.choice(self.heroes)))
-
-    @commands.command()
-    async def OWTeam(self, num: int):
-        """ Get a random OW Team """
-        result = [random.choice(self.heroes) for x in range(num)]
-        await self.bot.say("Here's your teamcomp! Good luck!\n" +
-                           "{}".format(" ".join(result)))
 
 
     @commands.command(pass_context=True)
