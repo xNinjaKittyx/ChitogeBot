@@ -42,15 +42,11 @@ class WordDB:
     async def topwords(self):
         sorted_db = sorted(self.wordDB.items(), key=operator.itemgetter(1), reverse=True)
 
-        counter = 0
         string = ''
         digits = max(map(len, sorted_db))
         f = '{0:>%d} | {1}\n' % (digits)
-        for x in sorted_db:
+        for i, x in zip(range(10), sorted_db):
             string += (str(x) + '\n')
-            counter += 1
-            if counter > 9:
-                break
         await self.bot.say(string)
 
 def setup(bot):
