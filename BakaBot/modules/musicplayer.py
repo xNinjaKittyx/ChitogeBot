@@ -16,7 +16,7 @@ class VoiceEntry:
         duration = self.player.duration
         if duration:
             fmt = fmt + ' [length: {0[0]}m {0[1]}s]'.format(divmod(duration, 60))
-        return fmt.forplay mat(self.player, self.requester)
+        return fmt.format(self.player, self.requester)
 
 
 class VoiceState:

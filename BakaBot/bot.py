@@ -11,7 +11,7 @@ import wikipedia
 import modules.checks as checks
 from discord.ext import commands
 from discord.utils import find
-from cleverbot import Cleverbot
+from cleverwrap import CleverWrap
 from PIL import Image
 import log
 
@@ -37,6 +37,7 @@ if not os.path.isfile('./json/setup.json'):
                    u"MALPassword": u"Password",
                    u"GoogleAPIKey": u"PutKeyHere",
                    u"DarkSkyAPIKey": u"PutAPIKeyHere",
+                   u"CleverbotAPI": u"PutAPIKeyHere",
                    u"Prefix": u"~"},
                   outfile, indent=4)
 with open('./json/setup.json') as data_file:
@@ -54,7 +55,7 @@ logger.addHandler(handler)
 
 
 random.seed()
-cb = Cleverbot()
+cb = CleverWrap(settings["CleverbotAPI"])
 
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
@@ -198,19 +199,28 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message_delete(message):
+    msg = '{0} deleted the following message: \n{1}'.format(message.author.name, message.content)
     modlog = find(lambda c: c.name == "modlog", message.server.channels)
-    await bot.send_message(modlog, '{0} deleted the following message: \n{1}'.format(message.author.name, message.content))
+    await bot.send_message(modlog, msg)
+    log.output(msg)
 
 @bot.event
 async def on_message_edit(before, after):
+    if before.content.startswith('http'):
+        return
+    msg = '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content)
     modlog = find(lambda c: c.name == "modlog", before.server.channels)
-    await bot.send_message(modlog, '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content))
+    await bot.send_message(modlog, msg)
+    log.output(msg)
 
 
 @bot.event
 async def on_message(message):
     if message.content.startswith(prefix):
-        log.output(message.author.name + " attempted to use the command: " + message.content)
+        msg = message.author.name + " attempted to use the command: " + message.content
+        modlog = find(lambda c: c.name == "modlog", message.server.channels)
+        log.output(msg)
+        await bot.send_message(modlog, msg)
     if message.author == bot.user:
         return
     if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
@@ -219,7 +229,7 @@ async def on_message(message):
     if message.content.startswith(bot.user.mention):
         await bot.send_typing(message.channel)
         try:
-            response = cb.ask(message.content.split(' ', 1)[1])
+            response = cw.say(message.content.split(' ', 1)[1])
             await bot.send_message(message.channel,
                                    message.author.mention + ' ' + response)
         except IndexError:
