@@ -6,4 +6,5 @@ pip install requests --upgrade
 pip install xmltodict --upgrade
 pip install cleverbot --upgrade
 pip install Pillow --upgrade
+pip install beautifulsoup4 --upgrade
 pause

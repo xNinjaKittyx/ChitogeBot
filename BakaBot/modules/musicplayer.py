@@ -2,6 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from discord.utils import find
+import modules.checks as checks
 
 
 class VoiceEntry:
@@ -15,7 +16,7 @@ class VoiceEntry:
         duration = self.player.duration
         if duration:
             fmt = fmt + ' [length: {0[0]}m {0[1]}s]'.format(divmod(duration, 60))
-        return fmt.format(self.player, self.requester)
+        return fmt.forplay mat(self.player, self.requester)
 
 
 class VoiceState:
@@ -141,7 +142,7 @@ class Music:
             fmt = 'An error occurred while processing this request: ```py\n{}: {}\n```'
             await self.bot.send_message(ctx.message.channel, fmt.format(type(e).__name__, e))
         else:
-            player.volume = 0.6
+            player.volume = 0.35
             entry = VoiceEntry(ctx.message, player)
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
@@ -152,7 +153,11 @@ class Music:
 
         state = self.get_voice_state(ctx.message.server)
         if state.is_playing():
+            if value > 200 or value < 1:
+                await self.bot.say('Value too high! 1 - 200 only!')
+                return
             player = state.player
+
             player.volume = value / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
@@ -177,6 +182,8 @@ class Music:
         """Stops playing audio and leaves the voice channel.
         This also clears the queue.
         """
+        if not checks.checkdev(ctx.message.author):
+            return
         server = ctx.message.server
         state = self.get_voice_state(server)
 
