@@ -17,7 +17,9 @@ class Ranks:
         weeb = find(lambda r: r.name == "Weeb", ctx.message.server.roles)
         if weeb in ctx.message.author.roles:
             return
-
+        if weeb is None:
+            await self.bot.say(ctx.message.channel, "~weeb is broken. PLSFIX :LUL:")
+            return
         normie = find(lambda r: r.name == "Normies", ctx.message.server.roles)
         await self.bot.add_roles(ctx.message.author, weeb)
         await self.bot.remove_roles(ctx.message.author, normie)

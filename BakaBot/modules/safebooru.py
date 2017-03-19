@@ -46,10 +46,10 @@ class Safebooru:
                 weeblist = self.getlink(link + '&pid=' + str(min(3,page)))
                 if page == numOfPages:
                     chosenone = random.randint(0, min(99, remaining))
-                    await self.bot.say(weeblist['posts']['post'][chosenone]['@file_url'])
+                    await self.bot.say('https:' + str(weeblist['posts']['post'][chosenone]['@file_url']))
                 else:
                     chosenone = random.randint(0, 99)
-                    await self.bot.say(weeblist['posts']['post'][chosenone]['@file_url'])
+                    await self.bot.say('https:' + str(weeblist['posts']['post'][chosenone]['@file_url']))
 
 
 

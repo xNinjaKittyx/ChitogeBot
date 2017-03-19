@@ -102,3 +102,4 @@ $RECYCLE.BIN/
 
 .idea/
 BakaBot/json/setup.json
+BakaBot/json/wordDB.json

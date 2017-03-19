@@ -10,7 +10,8 @@ import requests
 import wikipedia
 import modules.checks as checks
 from discord.ext import commands
-from cleverbot import Cleverbot
+from discord.utils import find
+from cleverwrap import CleverWrap
 from PIL import Image
 import log
 
@@ -36,6 +37,7 @@ if not os.path.isfile('./json/setup.json'):
                    u"MALPassword": u"Password",
                    u"GoogleAPIKey": u"PutKeyHere",
                    u"DarkSkyAPIKey": u"PutAPIKeyHere",
+                   u"CleverbotAPI": u"PutAPIKeyHere",
                    u"Prefix": u"~"},
                   outfile, indent=4)
 with open('./json/setup.json') as data_file:
@@ -52,9 +54,8 @@ handler.setFormatter(logging.Formatter('%(asctime)s: %(levelname)s: \
 logger.addHandler(handler)
 
 
-
 random.seed()
-cb = Cleverbot()
+cb = CleverWrap(settings["CleverbotAPI"])
 
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
@@ -63,20 +64,20 @@ initialtime = time.time()
 
 
 modules = {
-    'modules.musicplayer',
     'modules.anime',
-    'modules.pad',
     'modules.cat',
-    'modules.osu',
-    'modules.safebooru',
+    'modules.comics',
     'modules.fun',
-    'modules.wordDB',
-    'modules.XDCC',
-    'modules.ranks',
     'modules.gfycat',
+    'modules.musicplayer',
+    'modules.osu',
+    'modules.overwatch',
+    'modules.pad',
+    'modules.ranks',
+    'modules.safebooru',
     'modules.weather',
-    'modules.xkcd',
-    'modules.overwatch'
+    'modules.wordDB',
+    'modules.XDCC'
 
 }
 
@@ -91,56 +92,6 @@ def checkignorelistevent(chan):
             return True
 
 
-@bot.event
-async def on_member_join(member):
-    await bot.send_message(member, "Welcome to {0}! Feel free to read the things in #announcement, and when you're ready, type ~normie in #openthegates".format(member.server.name))
-    log.output(member.name + " has joined the server.")
-
-
-@bot.event
-async def on_member_remove(member):
-    await bot.send_message(member.server.default_channel, '{} has left the server.'.format(member.name))
-    log.output(member.name + " has left the server.")
-
-
-@bot.event
-async def on_ready():
-
-    log.output('Logged in as')
-    log.output("Username " + bot.user.name)
-    log.output("ID: " + bot.user.id)
-    if not discord.opus.is_loaded() and os.name == 'nt':
-        discord.opus.load_opus("opus.dll")
-
-    if not discord.opus.is_loaded() and os.name == 'posix':
-        discord.opus.load_opus("/usr/local/lib/libopus.so")
-    log.output("Loaded Opus Library")
-    initialtime = time.time()
-
-
-@bot.event
-async def on_message(message):
-    if message.content.startswith(prefix):
-        log.output(message.author.name + " attempted to use the command: " + message.content)
-    if message.author == bot.user:
-        return
-    if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
-        return
-
-    if message.content.startswith(bot.user.mention):
-        await bot.send_typing(message.channel)
-        try:
-            response = cb.ask(message.content.split(' ', 1)[1])
-            await bot.send_message(message.channel,
-                                   message.author.mention + ' ' + response)
-        except IndexError:
-            await bot.send_message(message.channel,
-                                   message.author.mention + ' Don\'t give me '
-                                   'the silent treatment.')
-        return
-    await bot.process_commands(message)
-
-
 @bot.command()
 async def wiki(*, search: str):
     """ Grabs Wikipedia Article """
@@ -151,6 +102,13 @@ async def wiki(*, search: str):
         page = wikipedia.page(searchlist[0])
         await bot.say(wikipedia.summary(searchlist[0], 3))
         await bot.say('URL:' + page.url)
+
+@bot.command(pass_context=True)
+async def ask(ctx, *, s: str):
+    """ Asks wolfram alpha"""
+    s.replace(' ', '+')
+    req = requests.get("http://api.wolframalpha.com/v1/result?appid=RPYQ54-Q3W9QJKWR9&i=" + s)
+    await bot.say(req.text)
 
 @bot.command()
 async def uptime():
@@ -227,6 +185,74 @@ async def changeUsername(ctx, *, s: str):
     if checks.checkdev(ctx.message):
         await bot.edit_profile(username=s)
 
+
+@bot.event
+async def on_member_join(member):
+    await bot.send_message(member, "Welcome to {0}! Feel free to read the things in #announcement, and when you're ready, type ~normie in #openthegates".format(member.server.name))
+    log.output(member.name + " has joined the server.")
+
+
+@bot.event
+async def on_member_remove(member):
+    await bot.send_message(member.server.default_channel, '{} has left the server.'.format(member.name))
+    log.output(member.name + " has left the server.")
+
+@bot.event
+async def on_message_delete(message):
+    msg = '{0} deleted the following message: \n{1}'.format(message.author.name, message.content)
+    modlog = find(lambda c: c.name == "modlog", message.server.channels)
+    await bot.send_message(modlog, msg)
+    log.output(msg)
+
+@bot.event
+async def on_message_edit(before, after):
+    if before.content.startswith('http'):
+        return
+    msg = '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content)
+    modlog = find(lambda c: c.name == "modlog", before.server.channels)
+    await bot.send_message(modlog, msg)
+    log.output(msg)
+
+
+@bot.event
+async def on_message(message):
+    if message.content.startswith(prefix):
+        msg = message.author.name + " attempted to use the command: " + message.content
+        modlog = find(lambda c: c.name == "modlog", message.server.channels)
+        log.output(msg)
+        await bot.send_message(modlog, msg)
+    if message.author == bot.user:
+        return
+    if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
+        return
+
+    if message.content.startswith(bot.user.mention):
+        await bot.send_typing(message.channel)
+        try:
+            response = cw.say(message.content.split(' ', 1)[1])
+            await bot.send_message(message.channel,
+                                   message.author.mention + ' ' + response)
+        except IndexError:
+            await bot.send_message(message.channel,
+                                   message.author.mention + ' Don\'t give me '
+                                   'the silent treatment.')
+        return
+    await bot.process_commands(message)
+
+
+@bot.event
+async def on_ready():
+
+    log.output('Logged in as')
+    log.output("Username " + bot.user.name)
+    log.output("ID: " + bot.user.id)
+    if not discord.opus.is_loaded() and os.name == 'nt':
+        discord.opus.load_opus("opus.dll")
+
+    if not discord.opus.is_loaded() and os.name == 'posix':
+        discord.opus.load_opus("/usr/local/lib/libopus.so")
+    log.output("Loaded Opus Library")
+    initialtime = time.time()
 
 
 if __name__ == "__main__":
