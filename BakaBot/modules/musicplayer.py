@@ -182,7 +182,7 @@ class Music:
         """Stops playing audio and leaves the voice channel.
         This also clears the queue.
         """
-        if not checks.checkdev(ctx.message.author):
+        if not checks.checkdev(ctx.message):
             return
         server = ctx.message.server
         state = self.get_voice_state(server)

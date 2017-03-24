@@ -21,6 +21,7 @@ class Safebooru:
 
     @commands.command(pass_context=True, no_pm=True)
     async def safebooru(self, ctx, *, search: str):
+        """Searches Safebooru"""
         link = ("http://safebooru.org/index.php?page=dapi&s=post&q=index" +
                 "&tags=" + search.replace(' ', '_'))
         weeblist = self.getlink(link)
