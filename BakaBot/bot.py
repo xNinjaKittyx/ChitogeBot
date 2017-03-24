@@ -55,7 +55,7 @@ logger.addHandler(handler)
 
 
 random.seed()
-cb = CleverWrap(settings["CleverbotAPI"])
+cw = CleverWrap(settings["CleverbotAPI"])
 
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''

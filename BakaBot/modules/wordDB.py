@@ -53,6 +53,7 @@ class WordDB:
 
     @commands.command()
     async def topwords(self):
+        """Top 10 words used in the server."""
         sorted_db = sorted(self.wordDB.items(), key=operator.itemgetter(1), reverse=True)
 
         string = ''
