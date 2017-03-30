@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from time import strftime
 
 from bs4 import BeautifulSoup
 import discord
@@ -17,27 +18,36 @@ class Cat:
 
         self.bot = bot
 
-    @commands.command()
-    async def meow(self):
+    @commands.command(pass_context=True)
+    async def meow(self, ctx):
         """ When User Types ~meow, return a cat link """
-
         req = requests.get('http://random.cat/meow')
         if req.status_code != 200:
             print("Could not get a meow")
         catlink = json.loads(req.text)
+        rngcat = catlink["file"]
+        author = ctx.message.author
+        em = discord.Embed(title='Random.Cat', description='Here have a cat.', url=rngcat, colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        em.set_image(url=rngcat)
+        await self.bot.say(embed=em)
 
-        await self.bot.say(catlink["file"])
-
-    @commands.command()
-    async def woof(self):
+    @commands.command(pass_context=True)
+    async def woof(self, ctx):
         """When user types ~woof, return a woof link """
 
         req = requests.get('http://random.dog/')
         if req.status_code != 200:
             print("Could not get a woof")
         doglink = BeautifulSoup(req.text, 'html.parser')
-
-        await self.bot.say('http://random.dog/' + doglink.img['src'])
+        rngdog = 'http://random.dog/' + doglink.img['src']
+        author = ctx.message.author
+        em = discord.Embed(title='Random.Dog', description='Here have a dog.', url=rngdog, colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        em.set_image(url=rngdog)
+        await self.bot.say(embed=em)
 
 
 def setup(bot):

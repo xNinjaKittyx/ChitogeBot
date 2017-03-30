@@ -1,8 +1,12 @@
 import asyncio
 import random
+from time import strftime
 
 import discord
 from discord.ext import commands
+import wikipedia
+import requests
+
 
 
 class Fun:
@@ -10,8 +14,8 @@ class Fun:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def roll(self, dice: str):
+    @commands.command(pass_context=True)
+    async def roll(self, ctx, *, dice: str ='1d6'):
         """Rolls a dice in NdN format."""
         try:
             rolls, limit = map(int, dice.split('d'))
@@ -19,8 +23,57 @@ class Fun:
             await self.bot.say('Format has to be in NdN!')
             return
 
-        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-        await self.bot.say(result)
+        author = ctx.message.author
+        em = discord.Embed(title='Here are your dice results!', colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        for r in range(rolls):
+            em.add_field(name="Dice #" + str(r), value=str(random.randint(1, limit)))
+        # result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+        await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True)
+    async def flip(self, ctx):
+        """ Flips a coin."""
+        author = ctx.message.author
+        em = discord.Embed(colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        coin = random.randint(1, 2)
+        if coin == 1:
+            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-obverse.png")
+            await self.bot.say(embed=em)
+        elif coin == 2:
+            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-reverse.png")
+            await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True)
+    async def wiki(self, ctx, *, search: str):
+        """ Grabs Wikipedia Article """
+        author = ctx.message.author
+        em = discord.Embed(colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        searchlist = wikipedia.search(search)
+        if len(searchlist) < 1:
+            em.description = 'No Results Found'
+            await self.bot.say(embed=em)
+        else:
+            page = wikipedia.page(searchlist[0])
+            em.title = page.title
+            em.url = page.url
+            em.description = wikipedia.summary(searchlist[0], 3)
+            em.set_image(url=page.images[0])
+            em.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/250px-Wikipedia-logo-v2-en.svg.png")
+            await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True)
+    async def ask(self, ctx, *, s: str):
+        """ Asks wolfram alpha"""
+        s.replace(' ', '+')
+        req = requests.get("http://api.wolframalpha.com/v1/result?appid=RPYQ54-Q3W9QJKWR9&i=" + s)
+        await self.bot.say(req.text)
+
 
     @commands.command(description='Ask the Bot to choose one')
     async def choose(self, *choices: str):
@@ -45,7 +98,18 @@ class Fun:
     @commands.command(pass_context=True)
     async def avatar(self, ctx, *, name: str):
         """ Grabbing an avatar of a person """
-        await self.bot.say(ctx.message.server.get_member_named(name).avatar_url)
+        user = ctx.message.server.get_member_named(name)
+        if user is None:
+            return
+        author = ctx.message.author
+        em = discord.Embed(url=user.avatar_url, colour=0xC154F5)
+        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
+        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        em.set_image(url=user.avatar_url)
+        grade = random.randint(1,11)
+        em.add_field(name=user.name + '#' + user.discriminator + '\'s Avatar', value=str(grade) + "/10")
+
+        await self.bot.say(embed=em)
 
 
     @commands.command()

@@ -7,7 +7,6 @@ import time
 
 import discord
 import requests
-import wikipedia
 import modules.checks as checks
 from discord.ext import commands
 from discord.utils import find
@@ -81,6 +80,8 @@ modules = {
 
 }
 
+
+
 def checkignorelistevent(chan):
     # checkignorelist given a channel.
     for serverid in ignore["servers"]:
@@ -91,24 +92,20 @@ def checkignorelistevent(chan):
         if channelid == chan.id:
             return True
 
-
 @bot.command()
-async def wiki(*, search: str):
-    """ Grabs Wikipedia Article """
-    searchlist = wikipedia.search(search)
-    if len(searchlist) < 1:
-        await bot.say('No Results Found')
-    else:
-        page = wikipedia.page(searchlist[0])
-        await bot.say(wikipedia.summary(searchlist[0], 3))
-        await bot.say('URL:' + page.url)
-
-@bot.command(pass_context=True)
-async def ask(ctx, *, s: str):
-    """ Asks wolfram alpha"""
-    s.replace(' ', '+')
-    req = requests.get("http://api.wolframalpha.com/v1/result?appid=RPYQ54-Q3W9QJKWR9&i=" + s)
-    await bot.say(req.text)
+async def testembed():
+    em = discord.Embed(title='My Embed Title', description='My Embed Description', colour=0xC154F5)
+    em.set_author(name='Wewlad', icon_url=bot.user.default_avatar_url)
+    em.set_footer(text='Powered by discord.py | ' + time.strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+    em.set_image(url="https://myanimelist.cdn-dena.com/images/anime/3/67177.jpg")
+    em.set_thumbnail(url="http://wiki.faforever.com/images/e/e9/Discord-icon.png")
+    em.add_field(name="wololol", value="wtf")
+    em.add_field(name="wololol", value="wtf")
+    em.add_field(name="wololol", value="wtf")
+    em.add_field(name="imgay", value="baka", inline=False)
+    em.add_field(name="imgay", value="baka", inline=False)
+    em.add_field(name="imgay", value="baka", inline=False)
+    await bot.say(embed=em)
 
 @bot.command()
 async def uptime():
@@ -206,7 +203,7 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before, after):
-    if before.content.startswith('http'):
+    if before.content == after.content:
         return
     msg = '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content)
     modlog = find(lambda c: c.name == "modlog", before.server.channels)
