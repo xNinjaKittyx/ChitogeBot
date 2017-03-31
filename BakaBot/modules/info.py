@@ -6,6 +6,7 @@ import asyncio
 import discord
 from discord.ext import commands
 import psutil
+import tools.discordembed as dmbd
 
 class Info:
 
@@ -45,10 +46,8 @@ class Info:
         url = "https://github.com/xNinjaKittyx/ChitogeBot"
         trello = "https://trello.com/b/DUquXypS/rin"
         inviteurl = "https://discordapp.com/oauth2/authorize?client_id=189939510480470016&scope=bot&permissions=0"
-        
-        em = discord.Embed(title=title, description=desc, url=url, colour=0xC154F5)
-        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
-        em.set_footer(text='Powered by discord.py | ' + time.strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+
+        em = dmbd.newembed(author, title, desc, url)
         em.add_field(name='Users', value=len(ctx.message.server.members))
         em.add_field(name='Uptime', value=self.getuptime())
         em.add_field(name='CPU', value="{0:.2f}%".format(self.getcpuusage()))

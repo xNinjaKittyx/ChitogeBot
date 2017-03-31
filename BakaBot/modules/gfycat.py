@@ -4,6 +4,7 @@ import discord
 import json
 import random
 from discord.ext import commands
+import tools.discordembed as dmbd
 
 class Gfycat:
 
@@ -20,18 +21,24 @@ class Gfycat:
 
         return giflist
 
-    @commands.command()
-    async def owgif(self):
+    @commands.command(pass_context=True)
+    async def owgif(self, ctx):
         giflist = self.gfylink("overwatch", 100)
 
         if not giflist:
             print('giflist not loaded correctly')
             return
         ayylmao = random.randint(0,99)
+        author = ctx.message.author
+        title = giflist["gfycats"][ayylmao]["gfyName"]
+        desc = giflist["gfycats"][ayylmao]["title"]
+        if giflist["gfycats"][ayylmao]["tags"] != None:
+            desc += " #" + " #".join([x for x in giflist["gfycats"][ayylmao]["tags"]])
+        url = "https://gfycat.com/" + title
 
-        gif = giflist["gfycats"][ayylmao]["gfyName"]
-        link = "https://gfycat.com/" + gif
-        await self.bot.say(link)
+        em = dmbd.newembed(author, title, desc, url)
+        await self.bot.say(embed=em)
+        await self.bot.say(url)
 
 def setup(bot):
     bot.add_cog(Gfycat(bot))

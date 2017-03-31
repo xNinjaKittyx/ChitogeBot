@@ -70,15 +70,19 @@ class Fun:
         """ Asks wolfram alpha"""
         s.replace(' ', '+')
         req = requests.get("http://api.wolframalpha.com/v1/result?appid=RPYQ54-Q3W9QJKWR9&i=" + s)
-        await self.bot.say(req.text)
+        author = ctx.message.author
+        em = dmbd.newembed(author, req.text)
+        await self.bot.say(embed=em)
 
 
-    @commands.command(description='Ask the Bot to choose one')
-    async def choose(self, *choices: str):
+    @commands.command(pass_context=True, description='Ask the Bot to choose one')
+    async def choose(self, ctx, *choices: str):
         """Chooses between multiple choices."""
-        await self.bot.say(random.choice(choices))
+        author = ctx.message.author
+        em = dmbd.newembed(author, random.choice(choices))
+        await self.bot.say(embed=em)
 
-    @commands.command(name='8ball')
+    @commands.command(pass_context=True, name='8ball')
     async def ball(self):
         """ Ask the 8Ball """
         answers = ['It is certain', 'It is decidedly so', 'Without a doubt',
@@ -90,7 +94,9 @@ class Fun:
                    'My reply is no', 'My sources say no',
                    'Outlook not so good', 'Very doubtful']
 
-        await self.bot.say(random.choice(answers))
+        author = ctx.message.author
+        em = dmbd.newembed(author, random.choice(answers))
+        await self.bot.say(embed=em)
 
 
     @commands.command(pass_context=True)

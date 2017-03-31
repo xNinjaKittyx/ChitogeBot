@@ -97,9 +97,6 @@ async def testembed():
     title = 'My Embed Title'
     desc = 'My Embed Description'
     em = dmbd.newembed(bot.user, title, desc)
-    # em = discord.Embed(title='My Embed Title', description='My Embed Description', colour=0xC154F5)
-    # em.set_author(name='Wewlad', icon_url=bot.user.default_avatar_url)
-    # em.set_footer(text='Powered by discord.py | ' + time.strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
     em.set_image(url="https://myanimelist.cdn-dena.com/images/anime/3/67177.jpg")
     em.set_thumbnail(url="http://wiki.faforever.com/images/e/e9/Discord-icon.png")
     em.add_field(name="wololol", value='[ohayo](http://www.google.com)')
@@ -118,7 +115,7 @@ async def status(ctx, *, s: str):
         await bot.change_presence(game=discord.Game(name=s))
 
 @bot.command(pass_context=True, hidden=True)
-async def changeAvatar(ctx, *, url: str):
+async def changeavatar(ctx, *, url: str):
     if checks.checkdev(ctx.message):
         response = requests.get(url)
 
@@ -131,7 +128,7 @@ async def changeAvatar(ctx, *, url: str):
             print("Editing the profile failed.")
 
 @bot.command(pass_context=True, hidden=True)
-async def changeUsername(ctx, *, s: str):
+async def changeusername(ctx, *, s: str):
     if checks.checkdev(ctx.message):
         await bot.edit_profile(username=s)
 
