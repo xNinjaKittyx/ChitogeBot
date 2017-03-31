@@ -7,7 +7,8 @@ import time
 
 import discord
 import requests
-import modules.checks as checks
+import tools.checks as checks
+import tools.discordembed as dmbd
 from discord.ext import commands
 from discord.utils import find
 from cleverwrap import CleverWrap
@@ -59,8 +60,6 @@ cw = CleverWrap(settings["CleverbotAPI"])
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
 bot = commands.Bot(command_prefix=prefix, description=description, pm_help=True)
-initialtime = time.time()
-
 
 modules = {
     'modules.anime',
@@ -68,6 +67,7 @@ modules = {
     'modules.comics',
     'modules.fun',
     'modules.gfycat',
+    'modules.info',
     'modules.musicplayer',
     'modules.osu',
     'modules.overwatch',
@@ -94,68 +94,21 @@ def checkignorelistevent(chan):
 
 @bot.command()
 async def testembed():
-    em = discord.Embed(title='My Embed Title', description='My Embed Description', colour=0xC154F5)
-    em.set_author(name='Wewlad', icon_url=bot.user.default_avatar_url)
-    em.set_footer(text='Powered by discord.py | ' + time.strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+    title = 'My Embed Title'
+    desc = 'My Embed Description'
+    em = dmbd.newembed(bot.user, title, desc)
+    # em = discord.Embed(title='My Embed Title', description='My Embed Description', colour=0xC154F5)
+    # em.set_author(name='Wewlad', icon_url=bot.user.default_avatar_url)
+    # em.set_footer(text='Powered by discord.py | ' + time.strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
     em.set_image(url="https://myanimelist.cdn-dena.com/images/anime/3/67177.jpg")
     em.set_thumbnail(url="http://wiki.faforever.com/images/e/e9/Discord-icon.png")
-    em.add_field(name="wololol", value="wtf")
-    em.add_field(name="wololol", value="wtf")
+    em.add_field(name="wololol", value='[ohayo](http://www.google.com)')
+    em.add_field(name=":tururu:", value="wtf")
     em.add_field(name="wololol", value="wtf")
     em.add_field(name="imgay", value="baka", inline=False)
     em.add_field(name="imgay", value="baka", inline=False)
     em.add_field(name="imgay", value="baka", inline=False)
     await bot.say(embed=em)
-
-@bot.command()
-async def uptime():
-    """ Displays Uptime """
-    seconds = int(time.time() - initialtime)
-    minutes = 0
-    hours = 0
-    days = 0
-    output = ""
-    if seconds > 59:
-        minutes = int(seconds / 60)
-        seconds -= minutes * 60
-
-    if minutes > 59:
-        hours = int(minutes/60)
-        minutes -= hours * 60
-
-    if hours > 23:
-        days = int(hours/24)
-        hours -= days * 24
-
-    if seconds == 1:
-        output = " {} second.".format(seconds) + output
-    elif seconds == 0:
-        pass
-    else:
-        output = " {} seconds.".format(seconds) + output
-
-    if minutes == 1:
-        output = " {} minute,".format(minutes) + output
-    elif minutes == 0:
-        pass
-    else:
-        output = " {} minutes,".format(minutes) + output
-
-    if hours == 1:
-        output = " {} hour,".format(hours) + output
-    elif hours == 0:
-        pass
-    else:
-        output = " {} hours,".format(hours) + output
-
-    if days == 1:
-        output = " {} day,".format(days) + output
-    elif days == 0:
-        pass
-    else:
-        output = " {} days,".format(days) + output
-
-    await bot.say("*This Bot has been alive for" + output +  "*")
 
 
 @bot.command(pass_context=True, hidden=True)
@@ -249,7 +202,6 @@ async def on_ready():
     if not discord.opus.is_loaded() and os.name == 'posix':
         discord.opus.load_opus("/usr/local/lib/libopus.so")
     log.output("Loaded Opus Library")
-    initialtime = time.time()
 
 
 if __name__ == "__main__":

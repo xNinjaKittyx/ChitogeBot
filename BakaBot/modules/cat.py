@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
 import requests
+import tools.discordembed as dmbd
 
 
 class Cat:
@@ -27,9 +28,10 @@ class Cat:
         catlink = json.loads(req.text)
         rngcat = catlink["file"]
         author = ctx.message.author
-        em = discord.Embed(title='Random.Cat', description='Here have a cat.', url=rngcat, colour=0xC154F5)
-        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
-        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        title = 'Random.Cat'
+        desc = 'Here, have a cat.'
+        url = rngcat
+        em = dmbd.newembed(author, title, desc, url)
         em.set_image(url=rngcat)
         await self.bot.say(embed=em)
 
@@ -43,9 +45,10 @@ class Cat:
         doglink = BeautifulSoup(req.text, 'html.parser')
         rngdog = 'http://random.dog/' + doglink.img['src']
         author = ctx.message.author
-        em = discord.Embed(title='Random.Dog', description='Here have a dog.', url=rngdog, colour=0xC154F5)
-        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
-        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        title = 'Random.Dog'
+        desc = 'Here, have a dog.'
+        url = rngdog
+        em = dmbd.newembed(author, title, desc, url)
         em.set_image(url=rngdog)
         await self.bot.say(embed=em)
 

@@ -11,7 +11,7 @@ import xmltodict
 
 import discord
 from discord.ext import commands
-
+import tools.discordembed as dmbd
 
 def cleanhtml(raw_html):
     """ Kudos to http://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string """
@@ -42,9 +42,7 @@ class Anime:
         """ Get the Info Message of the MalLink Class. Returns with Embed"""
         parser = htmlparser.HTMLParser()
 
-        em = discord.Embed(title=mal['title'], description=mal['english'], url=self.getlink(mal['id'], num), colour=0xC154F5)
-        em.set_author(name=author.name + '#' + author.discriminator, icon_url=author.avatar_url)
-        em.set_footer(text="Powered by discord.py | " + strftime('%a %b %d, %Y at %I:%M %p'), icon_url="https://my.mixtape.moe/jhbhte.png")
+        em = dmbd.newembed(author, mal['title'], mal['english'], self.getlink(mal['id'], num))
         em.set_thumbnail(url="http://img05.deviantart.net/1d5b/i/2014/101/c/c/myanimelist___logo_by_theresonly1cryo-d7dzp0l.png")
         em.set_image(url=mal['image'])
         if num == 1: # if anime
