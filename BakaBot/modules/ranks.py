@@ -14,15 +14,20 @@ class Ranks:
     @commands.command(pass_context=True, no_pm=True)
     async def weeb(self, ctx):
         """ Weeb is a lifestyle chosen once... Then stuck with you forever... """
-        weeb = find(lambda r: r.name == "Weeb", ctx.message.server.roles)
-        if weeb in ctx.message.author.roles:
+        weeb = find(lambda r: r.name == "Weebs", ctx.message.server.roles)
+        normie = find(lambda r: r.name == "Normies", ctx.message.server.roles)
+        print(weeb)
+        if weeb in ctx.message.author.roles or normie not in ctx.message.author.roles:
             return
         if weeb is None:
             await self.bot.say(ctx.message.channel, "~weeb is broken. PLSFIX :LUL:")
             return
-        normie = find(lambda r: r.name == "Normies", ctx.message.server.roles)
-        await self.bot.add_roles(ctx.message.author, weeb)
-        await self.bot.remove_roles(ctx.message.author, normie)
+        try:
+            while weeb not in ctx.message.author.roles:
+                await self.bot.add_roles(ctx.message.author, weeb)
+                await self.bot.remove_roles(ctx.message.author, normie)
+        except HTTPException:
+            await self.bot.add_roles(ctx.message.author, normie)
 
     @commands.command(pass_context=True, no_pm=True)
     async def normie(self, ctx):

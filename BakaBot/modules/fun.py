@@ -28,7 +28,7 @@ class Fun:
         title = 'Here are your dice results!'
         em = dmbd.newembed(author, title)
         for r in range(rolls):
-            em.add_field(name="Dice #" + str(r), value=str(random.randint(1, limit)))
+            em.add_field(name="Dice #" + str(r+1), value=str(random.randint(1, limit)))
         # result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
         await self.bot.say(embed=em)
 
