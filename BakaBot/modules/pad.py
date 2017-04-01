@@ -50,7 +50,7 @@ class PAD:
     def gettype(self, type1, type2=None, type3=None):
         types = [
         "Evo Material", "Balanced", "Physical", "Healer", "Dragon", "God",
-        "Attacker", "Devil", "Machine"
+        "Attacker", "Devil", "Machine", "", "", "", "", "", "Enhance Material"
         ]
         if type2 == None:
             return types[type1]
@@ -59,7 +59,7 @@ class PAD:
         else:
             return "/".join([types[type1], types[type2], types[type3]])
 
-    def getlink(self, mon, author):
+    def getlink(self, mon, author, index):
         title = mon['name']
         description = mon["name_jp"] + "\n" + "*" * mon["rarity"]
         url = 'http://puzzledragonx.com/en/monster.asp?n=' + str(mon['id'])
@@ -83,12 +83,13 @@ class PAD:
         """ Searches a PAD monster"""
         author = ctx.message.author
         results = []
+        index = []
         try:
             arg = int(arg)
             if arg in range(1, self.monsters[-1]['id']+1):
-                for x in self.monsters:
+                for (n, x) in enumerate(self.monsters):
                     if arg == x['id']:
-                        await self.bot.say(embed=self.getlink(x, author))
+                        await self.bot.say(embed=self.getlink(x, author, n))
                         return
             await self.bot.say("ID is not valid.")
             return
@@ -98,20 +99,21 @@ class PAD:
                 return
             arg = arg.lower()
         # First check if str is too short...
-        for m in self.monsters:
+        for (n, m) in enumerate(self.monsters):
             if arg in m['name'].lower():
                 results.append(m)
+                index.append(n)
 
         if len(results) > 1:
             string = ''
-            for m in results:
+            for (n, m) in enumerate(results):
                 if arg == m['name'].lower():
-                    await self.bot.say(embed=self.getlink(m, author))
+                    await self.bot.say(embed=self.getlink(m, author, index[n]))
                     return
                 string += str(m['name']) + '\n'
             await self.bot.say('Which one did you mean?\n' + string)
         elif len(results) == 1:
-            await self.bot.say(embed=self.getlink(results[0], author))
+            await self.bot.say(embed=self.getlink(results[0], author, index[0]))
         else:
             await self.bot.say('No Monster Found')
 
