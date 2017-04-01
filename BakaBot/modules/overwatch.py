@@ -54,9 +54,9 @@ class Overwatch:
         await self.bot.say("Play {}!".format(random.choice(self.heroes)))
 
     @commands.command()
-    async def OWTeam(self, num: int):
+    async def owteam(self, num: int = 6):
         """ Get a random OW Team """
-        result = [random.choice(self.heroes) for x in range(num)]
+        result = random.shuffle(self.heroes)[:num]
         await self.bot.say("Here's your teamcomp! Good luck!\n" +
                            "{}".format(" ".join(result)))
 

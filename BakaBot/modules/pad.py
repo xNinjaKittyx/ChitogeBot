@@ -1,9 +1,11 @@
+
+# -*- coding: utf8 -*-
 import requests
 import json
 import asyncio
 import discord
 from discord.ext import commands
-
+import tools.discordembed as dmbd
 
 class PAD:
     def __init__(self, bot):
@@ -37,8 +39,42 @@ class PAD:
         else:
             self.monsterdb = json.loads(r.text)
 
-    def getlink(self, id):
-        return 'http://puzzledragonx.com/en/monster.asp?n=' + str(id)
+    def getawaken(self, skills):
+        result = ""
+        for x in skills:
+            result += self.awakenings[x+1]['name'] + "\n"
+        return result
+
+    def gettype(self, type1, type2=None, type3=None):
+        types = [
+        "Evo Material", "Balanced", "Physical", "Healer", "Dragon", "God",
+        "Attacker", "Devil", "Machine"
+        ]
+        if type2 == None:
+            return types[type1]
+        elif type3 == None:
+            return "{0}/{1}".format(types[type1], types[type2])
+        else:
+            return "/".join([types[type1], types[type2], types[type3]])
+
+    def getlink(self, mon, author):
+        title = mon['name']
+        description = mon["name_jp"] + "\n" + "*" * mon["rarity"]
+        url = 'http://puzzledragonx.com/en/monster.asp?n=' + str(mon['id'])
+        em = dmbd.newembed(author, title, description, url)
+        em.set_image(url='https://www.padherder.com' + mon['image60_href'])
+        em.add_field(name='Type', value=self.gettype(mon['type'], mon['type2'], mon['type3']))
+        em.add_field(name='Cost', value=mon['team_cost'])
+        em.add_field(name='MaxLv', value="{0} ({1}xp)".format(mon['max_level'], mon['xp_curve']))
+        em.add_field(name='HP', value="[{0}][{1}]".format(mon['hp_min'], mon['hp_max']))
+        em.add_field(name='ATK', value="[{0}][{1}]".format(mon['atk_min'], mon['atk_max']))
+        em.add_field(name='RCV', value="[{0}][{1}]".format(mon['rcv_min'], mon['rcv_max']))
+        em.add_field(name='Leader Skill', value=mon['leader_skill'])
+        em.add_field(name='Active Skill', value=mon['active_skill'])
+        em.add_field(name='MP Sell Price', value=mon['monster_points'])
+        em.add_field(name='Awakenings', value=self.getawaken(mon['awoken_skills']), inline=False)
+
+        return em
 
     @commands.command(pass_context=True, no_pm=True)
     async def pad(self, ctx, *, arg: str):
@@ -51,6 +87,7 @@ class PAD:
 
         results = []
         arg = arg.lower()
+        author = ctx.message.author
 
         for m in self.monsters:
             if arg in m['name'].lower():
@@ -60,12 +97,12 @@ class PAD:
             string = ''
             for m in results:
                 if arg == m['name'].lower():
-                    await self.bot.say(self.getlink(m['id']))
+                    await self.bot.say(embed=self.getlink(m, author))
                     return
                 string += str(m['name']) + '\n'
             await self.bot.say('Which one did you mean?\n' + string)
         elif len(results) == 1:
-            await self.bot.say(self.getlink(results[0]['id']))
+            await self.bot.say(embed=self.getlink(results[0], author))
         else:
             await self.bot.say('No Monster Found')
 
