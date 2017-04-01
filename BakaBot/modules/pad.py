@@ -41,6 +41,8 @@ class PAD:
 
     def getawaken(self, skills):
         result = ""
+        if skills == []:
+            return 'None'
         for x in skills:
             result += self.awakenings[x+1]['name'] + "\n"
         return result
@@ -69,8 +71,8 @@ class PAD:
         em.add_field(name='HP', value="[{0}][{1}]".format(mon['hp_min'], mon['hp_max']))
         em.add_field(name='ATK', value="[{0}][{1}]".format(mon['atk_min'], mon['atk_max']))
         em.add_field(name='RCV', value="[{0}][{1}]".format(mon['rcv_min'], mon['rcv_max']))
-        em.add_field(name='Leader Skill', value=mon['leader_skill'])
-        em.add_field(name='Active Skill', value=mon['active_skill'])
+        em.add_field(name='Leader Skill', value=str(mon['leader_skill']))
+        em.add_field(name='Active Skill', value=str(mon['active_skill']))
         em.add_field(name='MP Sell Price', value=mon['monster_points'])
         em.add_field(name='Awakenings', value=self.getawaken(mon['awoken_skills']), inline=False)
 
@@ -79,16 +81,23 @@ class PAD:
     @commands.command(pass_context=True, no_pm=True)
     async def pad(self, ctx, *, arg: str):
         """ Searches a PAD monster"""
-
-        # First check if str is too short...
-        if len(arg) < 4:
-            await self.bot.say('Please use more than 3 letters')
-            return
-
-        results = []
-        arg = arg.lower()
         author = ctx.message.author
-
+        results = []
+        try:
+            arg = int(arg)
+            if arg in range(1, self.monsters[-1]['id']+1):
+                for x in self.monsters:
+                    if arg == x['id']:
+                        await self.bot.say(embed=self.getlink(x, author))
+                        return
+            await self.bot.say("ID is not valid.")
+            return
+        except ValueError:
+            if len(arg) < 4:
+                await self.bot.say('Please use more than 3 letters')
+                return
+            arg = arg.lower()
+        # First check if str is too short...
         for m in self.monsters:
             if arg in m['name'].lower():
                 results.append(m)
