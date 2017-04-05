@@ -14,7 +14,7 @@ class Current:
     """ Fetch the current weather from Dark Sky API based on Lat/Lng values """
 
     def __init__(self, lat, lng):
-
+        # DELET THIS. Make it a dictionary instead. A lot better.
         with open('./json/setup.json') as data_file:
             settings = json.load(data_file)
         self.dsapikey = settings["DarkSkyAPIKey"]

@@ -2,77 +2,22 @@
 
 import asyncio
 import json
+import re
+from time import strftime
+import html.parser as htmlparser
 
 import requests
 import xmltodict
 
 import discord
 from discord.ext import commands
+import tools.discordembed as dmbd
 
-
-class MalLink:
-    """ Any Instance of a MAL API XML document"""
-   # pylint: disable=too-many-instance-attributes,c0103
-    def __init__(self, info, num):
-        self.id = info['id']
-        self.title = info['title']
-        self.english = info['english']
-        # self.synonyms = info['synonyms']
-        if num == 1:
-            self.episodes = info['episodes']
-        elif num == 2:
-            self.chapters = info['chapters']
-            self.volumes = info['volumes']
-        self.score = info['score']
-        self.type = info['type']
-        self.status = info['status']
-        # self.start_date = info['start_date']
-        # self.end_date = info['end_date']
-        self.synopsis = info['synopsis']
-        self.image = info['image']
-        self.num = num
-
-    def getlink(self):
-        """Getter Function for Anime or Manga Link from MAL"""
-
-        if self.num == 1:
-            return str("<http://myanimelist.net/anime/" + str(self.id) + '>')
-        elif self.num == 2:
-            return str("<http://myanimelist.net/manga/" + str(self.id) + '>')
-
-    def getinfo(self):
-        """ Get the Info Message of the MalLink Class"""
-        if self.num == 1:
-            result = ('`Title:` **{0}**\n'
-                      '`English Title:` {1}\n'
-                      '`Episodes:` {2}\n'
-                      '`Status:` {3}\n'
-                      '`Score:` {4}\n'
-                      '`Type:` {5}\n'
-                      '`Link:` {6}\n'
-                      '`Synopsis:` {7}...\n'
-                      '`Img:` {8}\n').format(self.title, self.english,
-                                             self.episodes, self.status,
-                                             self.score, self.type,
-                                             self.getlink(),
-                                             self.synopsis[:500], self.image)
-
-        elif self.num == 2:
-            result = ('`Title:` **{0}**\n'
-                      '`English Title:` {1}\n'
-                      '`Chapters:` {2}\n'
-                      '`Volumes:` {3}\n'
-                      '`Status:` {4}\n'
-                      '`Score:` {5}\n'
-                      '`Type:` {6}\n'
-                      '`Link:` {7}\n'
-                      '`Synopsis:` {8}...\n'
-                      '`Img:` {9}\n').format(self.title, self.english,
-                                             self.chapters, self.volumes,
-                                             self.status, self.score,
-                                             self.type, self.getlink(),
-                                             self.synopsis[:500], self.image)
-        return result
+def cleanhtml(raw_html):
+    """ Kudos to http://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string """
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
 
 
 class Anime:
@@ -85,8 +30,36 @@ class Anime:
         self.username = settings["MALUsername"]
         self.password = settings["MALPassword"]
 
-    @commands.command()
-    async def anime(self, *, anime: str):
+    def getlink(self, iden, num):
+        """Getter Function for Anime or Manga Link from MAL"""
+
+        if num == 1:
+            return str("http://myanimelist.net/anime/" + str(iden))
+        elif num == 2:
+            return str("http://myanimelist.net/manga/" + str(iden))
+
+    def getinfo(self, author, mal, num):
+        """ Get the Info Message of the MalLink Class. Returns with Embed"""
+        parser = htmlparser.HTMLParser()
+
+        em = dmbd.newembed(author, mal['title'], mal['english'], self.getlink(mal['id'], num))
+        em.set_thumbnail(url="http://img05.deviantart.net/1d5b/i/2014/101/c/c/myanimelist___logo_by_theresonly1cryo-d7dzp0l.png")
+        em.set_image(url=mal['image'])
+        if num == 1: # if anime
+            em.add_field(name="Episodes", value=mal['episodes'])
+
+        elif num == 2: # if manga
+            em.add_field(name="Chapters", value=mal['chapters'])
+            em.add_field(name="Volumes", value=mal['volumes'])
+
+        em.add_field(name="Status", value=mal['status'])
+        em.add_field(name="Score", value=mal['score'])
+        em.add_field(name="Type", value=mal['type'])
+        em.add_field(name="Synopsis", value=cleanhtml(parser.unescape(mal['synopsis']))[:500] + "...")
+        return em
+
+    @commands.command(pass_context=True)
+    async def anime(self, ctx, *, anime: str):
         """ Returns the top anime of whatever the user asked for."""
 
         url = 'https://' + self.username + ":" + self.password + \
@@ -95,29 +68,30 @@ class Anime:
         if req.status_code == 200:
             animelist = xmltodict.parse(req.content)
             try:
-                result = animelist['anime']['entry'][0]
-                final = MalLink(result, 1)
+                mal = animelist['anime']['entry'][0]
                 entry = 1
-                while final.type != 'TV' and final.type != 'Movie':
-                    result = animelist['anime']['entry'][entry]
-                    final = MalLink(result, 1)
+                for x in animelist['anime']['entry']:
+                    if x['title'] == anime:
+                        await self.bot.say(embed=self.getinfo(ctx.message.author, x, 1))
+                        return
+                while mal['type'] != 'TV' and mal['type'] != 'Movie':
+                    mal = animelist['anime']['entry'][entry]
                     entry += 1
-                await self.bot.say(final.getinfo())
+                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 1))
 
             except KeyError:
                 print("Probably only 1 anime listed. Trying something else")
 
-                result = animelist['anime']['entry']
-                final = MalLink(result, 1)
-                await self.bot.say(final.getinfo())
+                mal = animelist['anime']['entry']
+                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 1))
 
         elif req.status_code == 204:
             await self.bot.say("No Anime Found")
         else:
             print("Not connected.")
 
-    @commands.command()
-    async def manga(self, *, manga: str):
+    @commands.command(pass_context=True)
+    async def manga(self, ctx, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
 
         manga.replace(' ', '_')
@@ -127,16 +101,18 @@ class Anime:
         if req.status_code == 200:
             mangalist = xmltodict.parse(req.content)
             try:
-                result = mangalist['manga']['entry'][0]
-                final = MalLink(result, 2)
-                await self.bot.say(final.getinfo())
+                mal = mangalist['manga']['entry'][0]
+                for x in mangalist['manga']['entry']:
+                    if x['title'] == manga:
+                        await self.bot.say(embed=self.getinfo(ctx.message.author, x, 2))
+                        return
+                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 2))
 
             except KeyError:
                 print("Probably only 1 manga listed. Trying something else")
 
-                result = mangalist['manga']['entry']
-                final = MalLink(result, 2)
-                await self.bot.say(final.getinfo())
+                mal = mangalist['manga']['entry']
+                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 2))
 
         elif req.status_code == 204:
             await self.bot.say("No Manga Found")

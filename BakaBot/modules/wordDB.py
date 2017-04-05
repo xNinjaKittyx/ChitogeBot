@@ -2,9 +2,11 @@ import asyncio
 import json
 import os
 import operator
+import re
 
 import discord
 from discord.ext import commands
+import tools.discordembed as dmbd
 
 class WordDB:
 
@@ -51,17 +53,23 @@ class WordDB:
 
         self.updatejsonfile()
 
-    @commands.command()
-    async def topwords(self):
+    @commands.command(pass_context=True)
+    async def topwords(self, ctx):
         """Top 10 words used in the server."""
         sorted_db = sorted(self.wordDB.items(), key=operator.itemgetter(1), reverse=True)
 
         string = ''
         digits = max(map(len, sorted_db))
         f = '{0:>%d} | {1}\n' % (digits)
+        author = ctx.message.author
+        title = "Top 10 Words Used"
+        desc = "This is counted across all servers"
+        em = dmbd.newembed(author, title, desc)
         for i, x in zip(range(10), sorted_db):
-            string += (str(x) + '\n')
-        await self.bot.say(string)
+            v = re.sub('[()\']', '', str(x))
+            em.add_field(name="#" + str(i + 1), value=v.replace(",", ":"))
+
+        await self.bot.say(embed=em)
 
     @commands.command()
     async def blackwords(self):

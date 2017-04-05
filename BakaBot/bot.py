@@ -1,3 +1,5 @@
+
+
 import asyncio
 import json
 import logging
@@ -7,8 +9,8 @@ import time
 
 import discord
 import requests
-import wikipedia
-import modules.checks as checks
+import tools.checks as checks
+import tools.discordembed as dmbd
 from discord.ext import commands
 from discord.utils import find
 from cleverwrap import CleverWrap
@@ -60,8 +62,6 @@ cw = CleverWrap(settings["CleverbotAPI"])
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
 bot = commands.Bot(command_prefix=prefix, description=description, pm_help=True)
-initialtime = time.time()
-
 
 modules = {
     'modules.anime',
@@ -69,6 +69,7 @@ modules = {
     'modules.comics',
     'modules.fun',
     'modules.gfycat',
+    'modules.info',
     'modules.musicplayer',
     'modules.osu',
     'modules.overwatch',
@@ -81,6 +82,8 @@ modules = {
 
 }
 
+
+
 def checkignorelistevent(chan):
     # checkignorelist given a channel.
     for serverid in ignore["servers"]:
@@ -91,74 +94,28 @@ def checkignorelistevent(chan):
         if channelid == chan.id:
             return True
 
+@bot.command(aliases=["logout", "close", "restart"], pass_context=True, hidden=True)
+async def kill(ctx):
+    if not checks.checkdev(ctx.message):
+        return
+    await bot.say("*Bot is exploding in 3 seconds.*")
+    await asyncio.sleep(3)
+    await bot.close()
 
-@bot.command()
-async def wiki(*, search: str):
-    """ Grabs Wikipedia Article """
-    searchlist = wikipedia.search(search)
-    if len(searchlist) < 1:
-        await bot.say('No Results Found')
-    else:
-        page = wikipedia.page(searchlist[0])
-        await bot.say(wikipedia.summary(searchlist[0], 3))
-        await bot.say('URL:' + page.url)
-
-@bot.command(pass_context=True)
-async def ask(ctx, *, s: str):
-    """ Asks wolfram alpha"""
-    s.replace(' ', '+')
-    req = requests.get("http://api.wolframalpha.com/v1/result?appid=RPYQ54-Q3W9QJKWR9&i=" + s)
-    await bot.say(req.text)
-
-@bot.command()
-async def uptime():
-    """ Displays Uptime """
-    seconds = int(time.time() - initialtime)
-    minutes = 0
-    hours = 0
-    days = 0
-    output = ""
-    if seconds > 59:
-        minutes = int(seconds / 60)
-        seconds -= minutes * 60
-
-    if minutes > 59:
-        hours = int(minutes/60)
-        minutes -= hours * 60
-
-    if hours > 23:
-        days = int(hours/24)
-        hours -= days * 24
-
-    if seconds == 1:
-        output = " {} second.".format(seconds) + output
-    elif seconds == 0:
-        pass
-    else:
-        output = " {} seconds.".format(seconds) + output
-
-    if minutes == 1:
-        output = " {} minute,".format(minutes) + output
-    elif minutes == 0:
-        pass
-    else:
-        output = " {} minutes,".format(minutes) + output
-
-    if hours == 1:
-        output = " {} hour,".format(hours) + output
-    elif hours == 0:
-        pass
-    else:
-        output = " {} hours,".format(hours) + output
-
-    if days == 1:
-        output = " {} day,".format(days) + output
-    elif days == 0:
-        pass
-    else:
-        output = " {} days,".format(days) + output
-
-    await bot.say("*This Bot has been alive for" + output +  "*")
+@bot.command(hidden=True)
+async def testembed():
+    title = 'My Embed Title'
+    desc = 'My Embed Description'
+    em = dmbd.newembed(bot.user, title, desc)
+    em.set_image(url="https://myanimelist.cdn-dena.com/images/anime/3/67177.jpg")
+    em.set_thumbnail(url="http://wiki.faforever.com/images/e/e9/Discord-icon.png")
+    em.add_field(name="wololol", value='[ohayo](http://www.google.com)')
+    em.add_field(name=":tururu:", value="wtf")
+    em.add_field(name="wololol", value="wtf")
+    em.add_field(name="imgay", value="baka", inline=False)
+    em.add_field(name="imgay", value="baka", inline=False)
+    em.add_field(name="imgay", value="baka", inline=False)
+    await bot.say(embed=em)
 
 
 @bot.command(pass_context=True, hidden=True)
@@ -168,7 +125,7 @@ async def status(ctx, *, s: str):
         await bot.change_presence(game=discord.Game(name=s))
 
 @bot.command(pass_context=True, hidden=True)
-async def changeAvatar(ctx, *, url: str):
+async def changeavatar(ctx, *, url: str):
     if checks.checkdev(ctx.message):
         response = requests.get(url)
 
@@ -181,7 +138,7 @@ async def changeAvatar(ctx, *, url: str):
             print("Editing the profile failed.")
 
 @bot.command(pass_context=True, hidden=True)
-async def changeUsername(ctx, *, s: str):
+async def changeusername(ctx, *, s: str):
     if checks.checkdev(ctx.message):
         await bot.edit_profile(username=s)
 
@@ -199,6 +156,8 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message_delete(message):
+    if message.author == bot.user:
+        return
     msg = '{0} deleted the following message: \n{1}'.format(message.author.name, message.content)
     modlog = find(lambda c: c.name == "modlog", message.server.channels)
     await bot.send_message(modlog, msg)
@@ -206,7 +165,9 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before, after):
-    if before.content.startswith('http'):
+    if before.author == bot.user:
+        return
+    if before.content == after.content:
         return
     msg = '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content)
     modlog = find(lambda c: c.name == "modlog", before.server.channels)
@@ -239,7 +200,6 @@ async def on_message(message):
         return
     await bot.process_commands(message)
 
-
 @bot.event
 async def on_ready():
 
@@ -252,7 +212,6 @@ async def on_ready():
     if not discord.opus.is_loaded() and os.name == 'posix':
         discord.opus.load_opus("/usr/local/lib/libopus.so")
     log.output("Loaded Opus Library")
-    initialtime = time.time()
 
 
 if __name__ == "__main__":
