@@ -1,3 +1,5 @@
+
+# -*- coding: utf8 -*-
 import asyncio
 import random
 from time import strftime
@@ -50,7 +52,10 @@ class Fun:
         """ Grabs Wikipedia Article """
         searchlist = wikipedia.search(search)
         if len(searchlist) < 1:
-            em.description = 'No Results Found'
+            author = ctx.message.author
+            title = "Searched for: " + search
+            desc = 'No Results Found'
+            em = dmbd.newembed(author, title, desc)
             await self.bot.say(embed=em)
         else:
             page = wikipedia.page(searchlist[0])
@@ -83,7 +88,7 @@ class Fun:
         await self.bot.say(embed=em)
 
     @commands.command(pass_context=True, name='8ball')
-    async def ball(self):
+    async def ball(self, ctx):
         """ Ask the 8Ball """
         answers = ['It is certain', 'It is decidedly so', 'Without a doubt',
                    'Yes, definitely', 'You may rely on it', 'As I see it, yes',
@@ -102,8 +107,20 @@ class Fun:
     @commands.command(pass_context=True)
     async def avatar(self, ctx, *, name: str):
         """ Grabbing an avatar of a person """
-        user = ctx.message.server.get_member_named(name)
-        if user is None:
+        if ctx.message.mentions:
+            user = ctx.message.mentions[0]
+        else:
+            user = ctx.message.server.get_member_named(name)
+        if not user:
+            name = name.lower()
+            for x in ctx.message.server.members:
+                if x.name.lower() == name or x.nick.lower() == name:
+                    user = x
+        if not user:
+            for x in ctx.message.server.members:
+                if name in x.name.lower() or name in x.nick.lower():
+                    user = x
+        if not user:
             return
         author = ctx.message.author
         em = dmbd.newembed(author, u=user.avatar_url)

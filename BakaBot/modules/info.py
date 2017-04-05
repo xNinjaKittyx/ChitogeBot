@@ -38,7 +38,7 @@ class Info:
     def getmemusage(self):
         return psutil.Process().memory_info().rss / (1024 ** 2)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, hidden=True)
     async def stats(self, ctx):
         author = ctx.message.author
         title = 'Stats for Rin'

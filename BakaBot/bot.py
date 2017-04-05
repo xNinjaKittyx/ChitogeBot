@@ -94,7 +94,15 @@ def checkignorelistevent(chan):
         if channelid == chan.id:
             return True
 
-@bot.command()
+@bot.command(aliases=["logout", "close", "restart"], pass_context=True, hidden=True)
+async def kill(ctx):
+    if not checks.checkdev(ctx.message):
+        return
+    await bot.say("*Bot is exploding in 3 seconds.*")
+    await asyncio.sleep(3)
+    await bot.close()
+
+@bot.command(hidden=True)
 async def testembed():
     title = 'My Embed Title'
     desc = 'My Embed Description'
@@ -148,6 +156,8 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message_delete(message):
+    if message.author == bot.user:
+        return
     msg = '{0} deleted the following message: \n{1}'.format(message.author.name, message.content)
     modlog = find(lambda c: c.name == "modlog", message.server.channels)
     await bot.send_message(modlog, msg)
@@ -155,6 +165,8 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before, after):
+    if before.author == bot.user:
+        return
     if before.content == after.content:
         return
     msg = '{0} edit the following message: \nBefore: {1}\n After: {2}'.format(before.author.name, before.content, after.content)
@@ -187,7 +199,6 @@ async def on_message(message):
                                    'the silent treatment.')
         return
     await bot.process_commands(message)
-
 
 @bot.event
 async def on_ready():
