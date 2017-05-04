@@ -102,7 +102,7 @@ def checkignorelistevent(chan):
             return True
 
 @bot.command(pass_context=True, hidden=True)
-async def kill(ctx):
+async def kys(ctx):
     if not checks.checkdev(ctx.message):
         return
     bot.cogs['WordDB'].cmdcount('kill')

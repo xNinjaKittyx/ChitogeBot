@@ -34,20 +34,26 @@ class Animehangman:
         self.anilistsecret = settings["AnilistSecret"]
         self.access_token, self.lastaccess = self.getaccesstoken()
         self.max = 90248
+        self.active = 0
+        self.currentboard = ""
 
-    async def display(self, currentboard, guess, misses, author, picture, win=0):
+    async def display(self, guess, misses, author, picture, win=0):
         subtitle = "Where you test your weeb level!"
         em = dmbd.newembed(author, "Anime Hangman!", subtitle)
         em.set_image(url=picture)
 
-        em.add_field(name="Word", value="`" + currentboard + "`")
+        em.add_field(name="Word", value="`" + self.currentboard.title() + "`", inline=False)
         if misses != []:
-            em.add_field(name="Guess", value=guess, inline=False)
+            em.add_field(name="Guess", value=guess)
             em.add_field(name="Misses", value=' '.join(misses))
         if not (len(misses) == 6 or win == 1):
             em.add_field(
                 name="How to Play",
-                value="Use " + self.bot.command_prefix + "guess [x] to guess the next letter",
+                value=(
+                "Use " + self.bot.command_prefix +
+                "guess [x] to guess the next letter\n"
+                "Type $guess quit to exit\n"
+                ),
                 inline=False
             )
 
@@ -66,14 +72,36 @@ class Animehangman:
         elif len(misses) == 6:
             em.set_thumbnail(url="https://goo.gl/8ymxqs")
             em.add_field(name="You Lose!", value="lul", inline=False)
+            self.active = 0
 
         if win == 1:
             em.add_field(name="You Win!", value="You weeb...", inline=False)
+        return await self.bot.say(embed=em)
+
+    async def displayanswer(self, author, char):
+        try:
+            anime = char['anime'][0]
+        except:
+            anime = char['anime']
+        subtitle = anime['title_japanese']
+        url = "https://anilist.co/anime/" + str(anime['id'])
+        em = dmbd.newembed(author, 'Here\'s the answer!', subtitle, url)
+        em.set_image(url=anime['image_url_lge'])
+        em.add_field(name=anime['title_romaji'], value=anime['title_english'])
+        em.add_field(name="Type", value=anime['type'])
+        em.add_field(name='Rating', value=anime['average_score'])
+        xstr = lambda s: s or ""
+        em.add_field(name=char['name_japanese'], value=char['name_first'] + " " + xstr(char['name_last']))
+
         await self.bot.say(embed=em)
 
-    @commands.command(pass_context=True)
+
+    @commands.command(pass_context=True, no_pm=True)
     async def animecharhangman(self, ctx):
         """ Play Hangman!"""
+        if self.active == 1:
+            await self.bot.say("There's already a game running!")
+            return
         delta = (datetime.today() - self.lastaccess)
         if delta.seconds > 3600 or delta.days > 0:
             self.access_token, self.lastaccess = self.getaccesstoken()
@@ -94,17 +122,19 @@ class Animehangman:
                 continue
             char = character
         if char["name_last"] == None:
-            answer = char["name_first"]
-            currentboard = "_"*len(char["name_first"])
+            answer = char["name_first"].lower()
+            self.currentboard = "_"*len(char["name_first"])
         else:
-            answer = char["name_first"] + " " + char["name_last"]
-            currentboard = "_"*len(char["name_first"]) + " " + "_"*len(char["name_last"])
+            answer = (char["name_first"] + " " + char["name_last"]).lower()
+            self.currentboard = "_"*len(char["name_first"]) + " " + "_"*len(char["name_last"])
         misses = []
         guess = "FirstDisplay"
         picture = char["image_url_lge"]
         author = ctx.message.author
-        while currentboard != answer or len(misses) == 6:
-            await self.display(currentboard, guess, misses, author, picture)
+        prev_message = None
+        self.active = 1
+        while self.currentboard != answer or self.active == 0:
+            prev_message = await self.display(guess, misses, author, picture)
 
             def check(msg):
                 return msg.content.startswith(self.bot.command_prefix + 'guess')
@@ -113,26 +143,46 @@ class Animehangman:
                 channel=ctx.message.channel,
                 check=check
                 )
+            await self.bot.delete_message(prev_message)
             author = msg.author
-            guess = msg.content[6:].strip()
+            guess = msg.content[6:].strip().lower()
+
+            if guess == 'quit':
+                self.active = 0
+                await self.bot.say("You Ragequit? What a loser.")
+                return
             if len(guess) > 1:
-                await self.bot.say("Please 1 letter at a time.")
-                continue
+                if len(guess) < len(answer):
+                    # TODO: keeps saying guess is too long when it's not.
+                    await self.bot.say("Your guess is too long. Try Again.")
+                    guess = ";^)"
+                    continue
+                if guess == answer:
+                    self.currentboard = answer
+                    self.active = 0
+                    await self.display(guess, misses, author, picture, 1)
+                    await self.displayanswer(author, char)
+                    return
+                else:
+                    misses.append(guess)
+                    continue
             if guess in misses:
                 await self.bot.say("You've already used that letter!")
                 continue
             if guess in answer:
                 for x in range(len(answer)):
-                    if answer[x].lower() == guess or answer[x].upper() == guess:
-                        currentboard = currentboard[:x] + answer[x] + currentboard[x+1:]
+                    if answer[x] == guess:
+                        print(answer[x] + " " + guess)
+                        self.currentboard = self.currentboard[:x] + answer[x] + self.currentboard[x+1:]
             else:
                 misses.append(guess)
 
-        if currentboard == answer:
-            await self.display(currentboard, guess, misses, author, picture, 1)
+        self.active = 0
+        if self.currentboard == answer:
+            await self.display(guess, misses, author, picture, 1)
         else:
-            await self.display(currentboard, guess, misses, author, picture, 0)
-
+            await self.display(guess, misses, author, picture, 0)
+        await self.displayanswer(author, char)
 
 def setup(bot):
     bot.add_cog(Animehangman(bot))

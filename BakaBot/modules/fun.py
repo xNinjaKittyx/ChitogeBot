@@ -42,10 +42,10 @@ class Fun:
         em = dmbd.newembed(author)
         coin = random.randint(1, 2)
         if coin == 1:
-            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-obverse.png")
+            em.set_image(url="https://www.usmint.gov/wordpress/wp-content/uploads/2017/03/2017-lincoln-penny-uncirculated-reverse-300x300.jpg")
             await self.bot.say(embed=em)
         elif coin == 2:
-            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-reverse.png")
+            em.set_image(url="https://www.usmint.gov/wordpress/wp-content/uploads/2017/03/2017-lincoln-penny-proof-obverse-san-francisco-300x300.jpg")
             await self.bot.say(embed=em)
 
         self.bot.cogs['WordDB'].cmdcount('flip')
