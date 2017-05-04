@@ -98,6 +98,7 @@ class Music:
             await self.bot.say('This is not a voice channel...')
         else:
             await self.bot.say('Ready to play audio in ' + channel.name)
+        self.bot.cogs['WordDB'].cmdcount('join')
 
     @commands.command(pass_context=True, no_pm=True)
     async def summon(self, ctx):
@@ -113,6 +114,7 @@ class Music:
         else:
             await state.voice.move_to(summoned_channel)
 
+        self.bot.cogs['WordDB'].cmdcount('summon')
         return True
 
     @commands.command(pass_context=True, no_pm=True)
@@ -147,6 +149,8 @@ class Music:
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
 
+        self.bot.cogs['WordDB'].cmdcount('play')
+
     @commands.command(pass_context=True, no_pm=True)
     async def volume(self, ctx, value: int):
         """Sets the volume of the currently playing song."""
@@ -161,6 +165,8 @@ class Music:
             player.volume = value / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
+        self.bot.cogs['WordDB'].cmdcount('volume')
+
     @commands.command(pass_context=True, no_pm=True)
     async def pause(self, ctx):
         """Pauses the currently played song."""
@@ -169,6 +175,8 @@ class Music:
             player = state.player
             player.pause()
 
+        self.bot.cogs['WordDB'].cmdcount('pause')
+
     @commands.command(pass_context=True, no_pm=True)
     async def resume(self, ctx):
         """Resumes the currently played song."""
@@ -176,6 +184,7 @@ class Music:
         if state.is_playing():
             player = state.player
             player.resume()
+        self.bot.cogs['WordDB'].cmdcount('resume')
 
     @commands.command(pass_context=True, no_pm=True)
     async def stop(self, ctx):
@@ -197,6 +206,8 @@ class Music:
             await state.voice.disconnect()
         except:
             pass
+
+        self.bot.cogs['WordDB'].cmdcount('stop')
 
     @commands.command(pass_context=True, no_pm=True)
     async def skip(self, ctx):
@@ -224,6 +235,8 @@ class Music:
         else:
             await self.bot.say('You have already voted to skip this song.')
 
+        self.bot.cogs['WordDB'].cmdcount('skip')
+
     @commands.command(pass_context=True, no_pm=True)
     async def playing(self, ctx):
         """Shows info about the currently played song."""
@@ -235,6 +248,7 @@ class Music:
             skip_count = len(state.skip_votes)
             await self.bot.say('Now playing {} [skips: {}/3]'.format(state.current, skip_count))
 
+        self.bot.cogs['WordDB'].cmdcount('playing')
 
 def setup(bot):
     bot.add_cog(Music(bot))

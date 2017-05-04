@@ -58,6 +58,8 @@ class Safebooru:
                 else:
                     chosenone = random.randint(0, 99)
                     em.set_image(url='https:' + str(weeblist['posts']['post'][chosenone]['@file_url']))
+            
+            self.bot.cogs['WordDB'].cmdcount('safebooru')
         await self.bot.say(embed=em)
 
 

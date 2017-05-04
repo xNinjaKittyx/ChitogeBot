@@ -47,11 +47,13 @@ class Overwatch:
         result += '```'
 
         await self.bot.say(result)
+        self.bot.cogs['WordDB'].cmdcount('owstats')
 
     @commands.command()
-    async def overwatch(self):
+    async def owrng(self):
         """ RNG OVERWATCH """
         await self.bot.say("Play {}!".format(random.choice(self.heroes)))
+        self.bot.cogs['WordDB'].cmdcount('owrng')
 
     @commands.command()
     async def owteam(self, num: int = 6):
@@ -59,6 +61,7 @@ class Overwatch:
         result = random.shuffle(self.heroes)[:num]
         await self.bot.say("Here's your teamcomp! Good luck!\n" +
                            "{}".format(" ".join(result)))
+        self.bot.cogs['WordDB'].cmdcount('manga')
 
 
 

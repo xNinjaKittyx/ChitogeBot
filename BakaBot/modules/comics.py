@@ -53,6 +53,7 @@ class Comics:
 
         info = json.loads(req.text)
         await self.bot.say(link + "\n" + info["img"])
+        self.bot.cogs['WordDB'].cmdcount('xkcd')
 
     @commands.command()
     async def ch(self):
@@ -67,6 +68,7 @@ class Comics:
         number = random.randint(1, self.cyanide.current)
         link = 'http://explosm.net/comics/' + str(number)
         await self.bot.say(link)
+        self.bot.cogs['WordDB'].cmdcount('ch')
 
     @commands.command()
     async def chrng(self):
@@ -80,6 +82,7 @@ class Comics:
                 return
         soup = BeautifulSoup(req.text, 'html.parser')
         await self.bot.say(soup.find(id="permalink", type="text").get("value"))
+        self.bot.cogs['WordDB'].cmdcount('chrng')
 
 
 def setup(bot):

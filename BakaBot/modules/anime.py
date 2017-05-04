@@ -46,9 +46,11 @@ class Anime:
         em.set_thumbnail(url="http://img05.deviantart.net/1d5b/i/2014/101/c/c/myanimelist___logo_by_theresonly1cryo-d7dzp0l.png")
         em.set_image(url=mal['image'])
         if num == 1: # if anime
+            self.bot.cogs['WordDB'].cmdcount('anime')
             em.add_field(name="Episodes", value=mal['episodes'])
 
         elif num == 2: # if manga
+            self.bot.cogs['WordDB'].cmdcount('manga')
             em.add_field(name="Chapters", value=mal['chapters'])
             em.add_field(name="Volumes", value=mal['volumes'])
 
@@ -90,6 +92,7 @@ class Anime:
         else:
             print("Not connected.")
 
+
     @commands.command(pass_context=True)
     async def manga(self, ctx, *, manga: str):
         """ Returns the top manga of whatever the user asked for."""
@@ -118,6 +121,7 @@ class Anime:
             await self.bot.say("No Manga Found")
         else:
             print("Not connected.")
+
 
 
 def setup(bot):

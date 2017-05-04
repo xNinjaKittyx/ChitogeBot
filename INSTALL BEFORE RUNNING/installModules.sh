@@ -6,5 +6,6 @@ pip3 install requests --upgrade
 pip3 install xmltodict --upgrade
 pip3 install cleverwrap --upgrade
 pip3 install Pillow --upgrade
-pip install beautifulsoup4 --upgrade
+pip3 install beautifulsoup4 --upgrade
+pip install psutil --upgrade
 sudo apt-get install ffmpeg

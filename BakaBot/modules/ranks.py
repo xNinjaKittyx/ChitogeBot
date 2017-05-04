@@ -29,6 +29,8 @@ class Ranks:
         except HTTPException:
             await self.bot.add_roles(ctx.message.author, normie)
 
+        self.bot.cogs['WordDB'].cmdcount('weeb')
+
     @commands.command(pass_context=True, no_pm=True)
     async def normie(self, ctx):
         """ Get access to the server! """
@@ -38,6 +40,8 @@ class Ranks:
             await self.bot.delete_message(ctx.message)
             await self.bot.send_message(ctx.message.server.default_channel, "Welcome {0} to the server!".format(ctx.message.author.mention))
 
+        self.bot.cogs['WordDB'].cmdcount('normie')
+
     @commands.command(pass_context=True, no_pm=True)
     async def bdo(self, ctx):
         """ Access to BDO channel """
@@ -46,6 +50,8 @@ class Ranks:
             await self.bot.remove_roles(ctx.message.author, bdo)
         else:
             await self.bot.add_roles(ctx.message.author, bdo)
+
+        self.bot.cogs['WordDB'].cmdcount('bdo')
 
 def setup(bot):
     bot.add_cog(Ranks(bot))

@@ -1,5 +1,3 @@
-
-
 import asyncio
 import json
 import logging
@@ -34,12 +32,14 @@ with open('./json/ignore.json') as data_file:
 
 if not os.path.isfile('./json/setup.json'):
     with open('./json/setup.json', 'w',) as outfile:
-        json.dump({u"botkey": u"putkeyhere",
-                   u"MALUsername": u"InsertUser",
-                   u"MALPassword": u"Password",
-                   u"GoogleAPIKey": u"PutKeyHere",
-                   u"DarkSkyAPIKey": u"PutAPIKeyHere",
-                   u"CleverbotAPI": u"PutAPIKeyHere",
+        json.dump({u"botkey": None,
+                   u"MALUsername": None,
+                   u"MALPassword": None,
+                   u"GoogleAPIKey": None,
+                   u"DarkSkyAPIKey": None,
+                   u"CleverbotAPI": None,
+                   u"AnilistID": None,
+                   u"AnilistSecret": None,
                    u"Prefix": u"~"},
                   outfile, indent=4)
 with open('./json/setup.json') as data_file:
@@ -57,7 +57,13 @@ logger.addHandler(handler)
 
 
 random.seed()
-cw = CleverWrap(settings["CleverbotAPI"])
+if settings["CleverbotAPI"]:
+    try:
+        cw = CleverWrap(settings["CleverbotAPI"])
+    except:
+        log.output("CleverbotAPIKey was not accepted.")
+else:
+    log.output("No CleverBotAPI was Provided")
 
 prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
@@ -70,15 +76,16 @@ modules = {
     'modules.fun',
     'modules.gfycat',
     'modules.info',
-    'modules.musicplayer',
+#    'modules.musicplayer',
     'modules.osu',
     'modules.overwatch',
-    'modules.pad',
-    'modules.ranks',
-    'modules.safebooru',
-    'modules.weather',
+#    'modules.pad',
+#    'modules.ranks',
+#    'modules.safebooru',
+#    'modules.weather',
     'modules.wordDB',
-    'modules.XDCC'
+#    'modules.XDCC'
+    'modules.animehangman'
 
 }
 
@@ -94,11 +101,12 @@ def checkignorelistevent(chan):
         if channelid == chan.id:
             return True
 
-@bot.command(aliases=["logout", "close", "restart"], pass_context=True, hidden=True)
+@bot.command(pass_context=True, hidden=True)
 async def kill(ctx):
     if not checks.checkdev(ctx.message):
         return
-    await bot.say("*Bot is exploding in 3 seconds.*")
+    bot.cogs['WordDB'].cmdcount('kill')
+    await bot.say("*Bot is kill in 3 seconds.*")
     await asyncio.sleep(3)
     await bot.close()
 
@@ -123,6 +131,7 @@ async def status(ctx, *, s: str):
     """ Changes Status """
     if checks.checkdev(ctx.message):
         await bot.change_presence(game=discord.Game(name=s))
+        bot.cogs['WordDB'].cmdcount('status')
 
 @bot.command(pass_context=True, hidden=True)
 async def changeavatar(ctx, *, url: str):
@@ -134,6 +143,7 @@ async def changeavatar(ctx, *, url: str):
             return
         try:
             await bot.edit_profile(avatar=response.content)
+            bot.cogs['WordDB'].cmdcount('changeavatar')
         except HTTPException as e:
             print("Editing the profile failed.")
 
@@ -141,6 +151,7 @@ async def changeavatar(ctx, *, url: str):
 async def changeusername(ctx, *, s: str):
     if checks.checkdev(ctx.message):
         await bot.edit_profile(username=s)
+        bot.cogs['WordDB'].cmdcount('changeusername')
 
 
 @bot.event
@@ -177,13 +188,13 @@ async def on_message_edit(before, after):
 
 @bot.event
 async def on_message(message):
+    if message.author == bot.user:
+        return
     if message.content.startswith(prefix):
         msg = message.author.name + " attempted to use the command: " + message.content
         modlog = find(lambda c: c.name == "modlog", message.server.channels)
         log.output(msg)
         await bot.send_message(modlog, msg)
-    if message.author == bot.user:
-        return
     if not checks.checkdev(message) and checks.checkignorelist(message, ignore):
         return
 
