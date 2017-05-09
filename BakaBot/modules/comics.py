@@ -52,7 +52,7 @@ class Comics:
             return
 
         info = json.loads(req.text)
-        await self.bot.say(link + "\n" + info["img"])
+        await self.bot.say(link)
         self.bot.cogs['WordDB'].cmdcount('xkcd')
 
     @commands.command()

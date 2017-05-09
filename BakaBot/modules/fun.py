@@ -122,8 +122,12 @@ class Fun:
         if not user:
             name = name.lower()
             for x in ctx.message.server.members:
-                if x.name.lower() == name or x.nick.lower() == name:
+                if x.name.lower() == name:
                     user = x
+                elif x.nick:
+                    if x.nick.lower() == name:
+                        user = x
+
         if not user:
             return
         author = ctx.message.author

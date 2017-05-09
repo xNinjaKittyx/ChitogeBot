@@ -4,6 +4,7 @@ import logging
 import random
 import os
 import time
+import sys
 
 import discord
 import requests
@@ -21,6 +22,9 @@ __version__ = "0.6"
 name = "BakaBot"
 
 
+# Creating files if they do not exist.
+# ignore.json is the list of ignored channels, servers, users
+# setup.json includes all the API keys
 if not os.path.exists('./json'):
     os.makedirs('./json')
 if not os.path.isfile('./json/ignore.json'):
@@ -33,8 +37,6 @@ with open('./json/ignore.json') as data_file:
 if not os.path.isfile('./json/setup.json'):
     with open('./json/setup.json', 'w',) as outfile:
         json.dump({u"botkey": None,
-                   u"MALUsername": None,
-                   u"MALPassword": None,
                    u"GoogleAPIKey": None,
                    u"DarkSkyAPIKey": None,
                    u"CleverbotAPI": None,
@@ -45,6 +47,9 @@ if not os.path.isfile('./json/setup.json'):
 with open('./json/setup.json') as data_file:
     settings = json.load(data_file)
 
+
+# Setting up basic logging. Honestly I don't have much use for this
+# I use another logger to log commands used and etc.
 logging.basicConfig(filename='rin.log', level=logging.WARNING)
 
 logger = logging.getLogger('discord')
@@ -56,6 +61,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s: %(levelname)s: \
 logger.addHandler(handler)
 
 
+# Seeding the random, activating cleverbot. Creating bot class.
 random.seed()
 if settings["CleverbotAPI"]:
     try:
@@ -69,6 +75,7 @@ prefix = settings["Prefix"]
 description = '''Baka means Idiot in Japanese.'''
 bot = commands.Bot(command_prefix=prefix, description=description, pm_help=True)
 
+# List of Modules used.
 modules = {
     'modules.anime',
     'modules.cat',
@@ -100,6 +107,24 @@ def checkignorelistevent(chan):
     for channelid in ignore["channels"]:
         if channelid == chan.id:
             return True
+
+@bot.command(pass_context=True, hidden=True)
+async def test(ctx, *, code: str):
+    if not checks.checkdev(ctx.message):
+        return
+    else:
+        if code.startswith("```Python\n"):
+            code = code[10:-3]
+            start_time = time.time()
+            try:
+                exec(code)
+                await bot.say("```Code Executed```")
+            except:
+                await bot.say("```\n" + sys.exc_info() + "```")
+                print("Syntax Error")
+            total_time = time.time() - start_time
+            await bot.say("This took *" + str(total_time) + "* seconds")
+
 
 @bot.command(pass_context=True, hidden=True)
 async def kys(ctx):
@@ -188,6 +213,8 @@ async def on_message_edit(before, after):
 
 @bot.event
 async def on_message(message):
+    if message.content.startswith(prefix + "guess"):
+        return
     if message.author == bot.user:
         return
     if message.content.startswith(prefix):

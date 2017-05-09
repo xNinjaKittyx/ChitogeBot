@@ -1,91 +1,138 @@
 """ To Get an Anime or Manga from MyAnimeList"""
 
+# -*- coding: utf8 -*-
 import asyncio
+from datetime import datetime
 import json
 import re
 from time import strftime
 import html.parser as htmlparser
 
 import requests
-import xmltodict
 
+from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
 import tools.discordembed as dmbd
 
-def cleanhtml(raw_html):
-    """ Kudos to http://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string """
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
-    return cleantext
-
 
 class Anime:
     """Searches up stuff on My Anime List"""
+    def getaccesstoken(self):
+        req = requests.post(
+            'https://anilist.co/api/auth/access_token', data={
+                'grant_type': 'client_credentials',
+                'client_id': self.anilistid,
+                'client_secret': self.anilistsecret
+            }
+        )
+        if req.status_code != 200:
+            print("Cannot get Anilist Access Token")
+            return
+        results = json.loads(req.text)
+        return results['access_token'], datetime.today()
 
     def __init__(self, bot):
         self.bot = bot
         with open('./json/setup.json') as data_file:
             settings = json.load(data_file)
-        self.username = settings["MALUsername"]
-        self.password = settings["MALPassword"]
+        self.anilistid = settings["AnilistID"]
+        self.anilistsecret = settings["AnilistSecret"]
+        self.access_token, self.lastaccess = self.getaccesstoken()
 
-    def getlink(self, iden, num):
-        """Getter Function for Anime or Manga Link from MAL"""
-
-        if num == 1:
-            return str("http://myanimelist.net/anime/" + str(iden))
-        elif num == 2:
-            return str("http://myanimelist.net/manga/" + str(iden))
-
-    def getinfo(self, author, mal, num):
+    def getinfo(self, author, series):
         """ Get the Info Message of the MalLink Class. Returns with Embed"""
         parser = htmlparser.HTMLParser()
 
-        em = dmbd.newembed(author, mal['title'], mal['english'], self.getlink(mal['id'], num))
-        em.set_thumbnail(url="http://img05.deviantart.net/1d5b/i/2014/101/c/c/myanimelist___logo_by_theresonly1cryo-d7dzp0l.png")
-        em.set_image(url=mal['image'])
-        if num == 1: # if anime
+        em = dmbd.newembed(
+            author,
+            series['title_japanese'],
+            series['title_romaji'],
+            self.getlink(series['id'], series['series_type'])
+        )
+        em.set_thumbnail(url="https://anilist.co/img/logo_al.png")
+        em.set_image(url=series['image_url_med'])
+        if series['series_type'] == 'anime': # if anime
             self.bot.cogs['WordDB'].cmdcount('anime')
-            em.add_field(name="Episodes", value=mal['episodes'])
+            em.add_field(name="Episodes", value=series['total_episodes'])
+            try:
+                em.add_field(name="Length", value=series['duration'] + " minutes")
+            except KeyError:
+                pass
+            try:
+                em.add_field(name="Status", value=series['airing_status'])
+            except KeyError:
+                pass
 
-        elif num == 2: # if manga
+        elif series['series_type'] == 'manga': # if manga
             self.bot.cogs['WordDB'].cmdcount('manga')
-            em.add_field(name="Chapters", value=mal['chapters'])
-            em.add_field(name="Volumes", value=mal['volumes'])
+            em.add_field(name="Chapters", value=series['total_chapters'])
+            em.add_field(name="Volumes", value=series['total_volumes'])
+            try:
+                em.add_field(name="Status", value=series['publishing_status'])
+            except KeyError:
+                pass
 
-        em.add_field(name="Status", value=mal['status'])
-        em.add_field(name="Score", value=mal['score'])
-        em.add_field(name="Type", value=mal['type'])
-        em.add_field(name="Synopsis", value=cleanhtml(parser.unescape(mal['synopsis']))[:500] + "...")
+        em.add_field(name="Score", value=series['average_score'])
+        em.add_field(name="Type", value=series['type'])
+        if series['description'] != None:
+            cleantext = BeautifulSoup(series['description'], "html.parser").text[:500] + "..."
+            em.add_field(name="Synopsis", value=cleantext)
         return em
 
-    @commands.command(pass_context=True)
-    async def anime(self, ctx, *, anime: str):
-        """ Returns the top anime of whatever the user asked for."""
+    def getlink(self, series_id, series_type):
+        """Getter Function for Anime or Manga Link from MAL"""
 
-        url = 'https://' + self.username + ":" + self.password + \
-              '@myanimelist.net/api/anime/search.xml?q=' + anime.replace(' ', '_')
+        if series_type == 'anime':
+            return str("https://anilist.co/anime/" + str(series_id))
+        elif series_type == 'manga':
+            return str("https://anilist.co/manga/" + str(series_id))
+
+    def refreshtoken(self):
+        delta = (datetime.today() - self.lastaccess)
+        if delta.seconds > 3600 or delta.days > 0:
+            self.access_token, self.lastaccess = self.getaccesstoken()
+
+    @commands.command(pass_context=True)
+    async def anime(self, ctx, *, ani: str):
+        """ Returns the top anime of whatever the user asked for."""
+        self.refreshtoken()
+
+        url = (
+            'https://anilist.co/api/anime/search/' +
+            ani + "?access_token=" + self.access_token
+        )
+
         req = requests.get(url)
         if req.status_code == 200:
-            animelist = xmltodict.parse(req.content)
+            animelist = json.loads(req.text)
+
             try:
-                mal = animelist['anime']['entry'][0]
-                entry = 1
-                for x in animelist['anime']['entry']:
-                    if x['title'] == anime:
-                        await self.bot.say(embed=self.getinfo(ctx.message.author, x, 1))
-                        return
-                while mal['type'] != 'TV' and mal['type'] != 'Movie':
-                    mal = animelist['anime']['entry'][entry]
-                    entry += 1
-                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 1))
+                await self.bot.say(animelist["error"]["message"][0])
+            except:
+                pass
 
-            except KeyError:
-                print("Probably only 1 anime listed. Trying something else")
-
-                mal = animelist['anime']['entry']
-                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 1))
+            chosen = {}
+            for x in animelist:
+                if x['title_romaji'].lower() == ani.lower():
+                    chosen = x
+                    break
+                elif x['title_english'].lower() == ani.lower():
+                    chosen = x
+                    break
+            if chosen == {}:
+                for x in animelist:
+                    if x['type'] == "TV":
+                        chosen = x
+                        break
+                if chosen == {}:
+                    for x in animelist:
+                        if x['type'] == "Movie":
+                            chosen = x
+                            break
+            if chosen == {}:
+                chosen = animelist[0]
+            await self.bot.say(embed=self.getinfo(ctx.message.author, chosen))
 
         elif req.status_code == 204:
             await self.bot.say("No Anime Found")
@@ -94,31 +141,42 @@ class Anime:
 
 
     @commands.command(pass_context=True)
-    async def manga(self, ctx, *, manga: str):
+    async def manga(self, ctx, *, mang: str):
         """ Returns the top manga of whatever the user asked for."""
 
-        manga.replace(' ', '_')
-        url = 'https://' + self.username + ":" + self.password + \
-               '@myanimelist.net/api/manga/search.xml?q=' + manga
-        req = requests.get(url, auth=(self.username, self.password))
+        self.refreshtoken()
+        url = (
+            'https://anilist.co/api/manga/search/' +
+            mang + "?access_token=" + self.access_token
+        )
+        req = requests.get(url)
         if req.status_code == 200:
-            mangalist = xmltodict.parse(req.content)
+            mangalist = json.loads(req.text)
             try:
-                mal = mangalist['manga']['entry'][0]
-                for x in mangalist['manga']['entry']:
-                    if x['title'] == manga:
-                        await self.bot.say(embed=self.getinfo(ctx.message.author, x, 2))
-                        return
-                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 2))
-
-            except KeyError:
-                print("Probably only 1 manga listed. Trying something else")
-
-                mal = mangalist['manga']['entry']
-                await self.bot.say(embed=self.getinfo(ctx.message.author, mal, 2))
-
-        elif req.status_code == 204:
-            await self.bot.say("No Manga Found")
+                await self.bot.say(mangalist["error"]["message"][0])
+            except:
+                pass
+            chosen = {}
+            for x in mangalist:
+                if x['title_romaji'].lower() == mang.lower():
+                    chosen = x
+                    break
+                elif x['title_english'].lower() == mang.lower():
+                    chosen = x
+                    break
+            if chosen == {}:
+                for x in mangalist:
+                    if x['type'] == "Manga" or x['type'] == "Novel":
+                        chosen = x
+                        break
+                if chosen == {}:
+                    for x in mangalist:
+                        if x['type'] == "Manhua" or x['type'] == "Manhwa":
+                            chosen = x
+                            break
+            if chosen == {}:
+                chosen = mangalist[0]
+            await self.bot.say(embed=self.getinfo(ctx.message.author, chosen))
         else:
             print("Not connected.")
 

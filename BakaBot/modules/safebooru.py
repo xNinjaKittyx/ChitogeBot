@@ -51,14 +51,14 @@ class Safebooru:
                 page = random.randint(0, numOfPages)
                 # Avoiding oversearching, and cutting the page limit to 3.
                 # Sometimes really unrelated stuff gets put in.
-                weeblist = self.getlink(link + '&pid=' + str(min(3,page)))
+                weeblist = self.getlink(link + '&pid=' + str(min(3, page)))
                 if page == numOfPages:
                     chosenone = random.randint(0, min(99, remaining))
                     em.set_image(url='https:' + str(weeblist['posts']['post'][chosenone]['@file_url']))
                 else:
                     chosenone = random.randint(0, 99)
                     em.set_image(url='https:' + str(weeblist['posts']['post'][chosenone]['@file_url']))
-            
+
             self.bot.cogs['WordDB'].cmdcount('safebooru')
         await self.bot.say(embed=em)
 

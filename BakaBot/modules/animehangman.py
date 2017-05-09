@@ -1,5 +1,4 @@
-
-
+# -*- coding: utf8 -*-
 import asyncio
 from datetime import datetime
 import json
@@ -118,23 +117,22 @@ class Animehangman:
                 continue
             character = json.loads(req.text)
             print(character["id"])
-            if character["anime"] == []:
+            if character["anime"] == [] or character['image_url_lge'] == "https://cdn.anilist.co/img/dir/character/reg/default.jpg":
                 continue
             char = character
-        if char["name_last"] == None:
-            answer = char["name_first"].lower()
-            self.currentboard = "_"*len(char["name_first"])
-        else:
-            answer = (char["name_first"] + " " + char["name_last"]).lower()
-            self.currentboard = "_"*len(char["name_first"]) + " " + "_"*len(char["name_last"])
+
+        answer = char["name_first"].lower()
+        self.currentboard = "_"*len(char["name_first"])
+        if char["name_last"]:
+            answer += " " + char["name_last"].lower()
+            self.currentboard += " " + "_"*len(char["name_last"])
         misses = []
         guess = "FirstDisplay"
         picture = char["image_url_lge"]
         author = ctx.message.author
-        prev_message = None
+        prev_message = await self.display(guess, misses, author, picture)
         self.active = 1
-        while self.currentboard != answer or self.active == 0:
-            prev_message = await self.display(guess, misses, author, picture)
+        while self.currentboard != answer or self.active == 1:
 
             def check(msg):
                 return msg.content.startswith(self.bot.command_prefix + 'guess')
@@ -147,42 +145,49 @@ class Animehangman:
             author = msg.author
             guess = msg.content[6:].strip().lower()
 
-            if guess == 'quit':
+            if len(guess) > 1:
+                await self.bot.say("You need to give me a letter!")
+            elif guess == 'quit':
                 self.active = 0
                 await self.bot.say("You Ragequit? What a loser.")
+                for x in range(6 - len(misses)):
+                    misses.append('.')
+                await self.display(guess, misses, author, picture, 0)
+                await self.displayanswer(author, char)
                 return
-            if len(guess) > 1:
-                if len(guess) < len(answer):
+            elif len(guess) > 1:
+                if len(answer) < len(guess):
                     # TODO: keeps saying guess is too long when it's not.
                     await self.bot.say("Your guess is too long. Try Again.")
                     guess = ";^)"
-                    continue
-                if guess == answer:
+                elif guess == answer:
                     self.currentboard = answer
-                    self.active = 0
-                    await self.display(guess, misses, author, picture, 1)
-                    await self.displayanswer(author, char)
-                    return
                 else:
                     misses.append(guess)
-                    continue
-            if guess in misses:
+            elif guess in misses:
                 await self.bot.say("You've already used that letter!")
-                continue
-            if guess in answer:
+            elif guess in answer:
                 for x in range(len(answer)):
                     if answer[x] == guess:
-                        print(answer[x] + " " + guess)
                         self.currentboard = self.currentboard[:x] + answer[x] + self.currentboard[x+1:]
             else:
                 misses.append(guess)
 
+
+            if self.currentboard == answer:
+                await self.display(guess, misses, author, picture, 1)
+                await self.displayanswer(author, char)
+                self.active = 0
+                return
+            elif len(misses) >= 6:
+                await self.display(guess, misses, author, picture, 0)
+                await self.displayanswer(author, char)
+                self.active = 0
+                return
+            else:
+                prev_message = await self.display(guess, misses, author, picture, 0)
+
         self.active = 0
-        if self.currentboard == answer:
-            await self.display(guess, misses, author, picture, 1)
-        else:
-            await self.display(guess, misses, author, picture, 0)
-        await self.displayanswer(author, char)
 
 def setup(bot):
     bot.add_cog(Animehangman(bot))
