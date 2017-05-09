@@ -56,6 +56,7 @@ class Info:
         em.add_field(name='Invite', value='[Click Me :)]({})'.format(inviteurl))
 
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('info')
 
 def setup(bot):
     bot.add_cog(Info(bot))

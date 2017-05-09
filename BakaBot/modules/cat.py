@@ -34,6 +34,7 @@ class Cat:
         em = dmbd.newembed(author, title, desc, url)
         em.set_image(url=rngcat)
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('meow')
 
     @commands.command(pass_context=True)
     async def woof(self, ctx):
@@ -51,6 +52,7 @@ class Cat:
         em = dmbd.newembed(author, title, desc, url)
         em.set_image(url=rngdog)
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('woof')
 
 
 def setup(bot):

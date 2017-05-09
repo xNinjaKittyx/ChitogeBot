@@ -103,6 +103,7 @@ class Weather:
             place = location["results"][0]["address_components"][0]["long_name"]
             current = Current(lat, lng)
             await self.bot.say(current.msg(place))
+            self.bot.cogs['WordDB'].cmdcount('weather')
             return
 
         else:

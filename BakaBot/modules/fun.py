@@ -33,6 +33,7 @@ class Fun:
             em.add_field(name="Dice #" + str(r+1), value=str(random.randint(1, limit)))
         # result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('roll')
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
@@ -41,11 +42,13 @@ class Fun:
         em = dmbd.newembed(author)
         coin = random.randint(1, 2)
         if coin == 1:
-            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-obverse.png")
+            em.set_image(url="https://www.usmint.gov/wordpress/wp-content/uploads/2017/03/2017-lincoln-penny-uncirculated-reverse-300x300.jpg")
             await self.bot.say(embed=em)
         elif coin == 2:
-            em.set_image(url="https://www.usmint.gov/images/mint_programs/circulatingCoins/Penny-reverse.png")
+            em.set_image(url="https://www.usmint.gov/wordpress/wp-content/uploads/2017/03/2017-lincoln-penny-proof-obverse-san-francisco-300x300.jpg")
             await self.bot.say(embed=em)
+
+        self.bot.cogs['WordDB'].cmdcount('flip')
 
     @commands.command(pass_context=True)
     async def wiki(self, ctx, *, search: str):
@@ -68,7 +71,9 @@ class Fun:
 
             em.set_image(url=page.images[0])
             em.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/250px-Wikipedia-logo-v2-en.svg.png")
+            self.bot.cogs['WordDB'].cmdcount('wiki')
             await self.bot.say(embed=em)
+
 
     @commands.command(pass_context=True)
     async def ask(self, ctx, *, s: str):
@@ -78,6 +83,7 @@ class Fun:
         author = ctx.message.author
         em = dmbd.newembed(author, req.text)
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('ask')
 
 
     @commands.command(pass_context=True, description='Ask the Bot to choose one')
@@ -86,6 +92,7 @@ class Fun:
         author = ctx.message.author
         em = dmbd.newembed(author, random.choice(choices))
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('choose')
 
     @commands.command(pass_context=True, name='8ball')
     async def ball(self, ctx):
@@ -102,6 +109,7 @@ class Fun:
         author = ctx.message.author
         em = dmbd.newembed(author, random.choice(answers))
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('8ball')
 
 
     @commands.command(pass_context=True)
@@ -114,12 +122,12 @@ class Fun:
         if not user:
             name = name.lower()
             for x in ctx.message.server.members:
-                if x.name.lower() == name or x.nick.lower() == name:
+                if x.name.lower() == name:
                     user = x
-        if not user:
-            for x in ctx.message.server.members:
-                if name in x.name.lower() or name in x.nick.lower():
-                    user = x
+                elif x.nick:
+                    if x.nick.lower() == name:
+                        user = x
+
         if not user:
             return
         author = ctx.message.author
@@ -129,6 +137,7 @@ class Fun:
         em.add_field(name=user.name + '#' + user.discriminator + '\'s Avatar', value=str(grade) + "/10")
 
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('avatar')
 
 
     @commands.command()
@@ -137,6 +146,7 @@ class Fun:
         await self.bot.say("O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo " +
                            "AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-" +
                            " JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA")
+        self.bot.cogs['WordDB'].cmdcount('brainpower')
 
 def setup(bot):
     bot.add_cog(Fun(bot))

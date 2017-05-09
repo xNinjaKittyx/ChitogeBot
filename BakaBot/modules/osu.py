@@ -34,7 +34,7 @@ class OsuPlayer:
         em.add_field(name='Performance', value=self.pp_raw + 'pp')
         em.add_field(name='Accuracy', value="{0:.2f}%".format(float(self.accuracy)))
         lvl = int(float(self.level))
-        percent = int(float(self.level) - lvl * 100)
+        percent = int((float(self.level) - lvl) * 100)
         em.add_field(name='Level', value="{0} ({1}%)".format(lvl,percent))
         em.add_field(name='Rank', value=self.pp)
         em.add_field(name='Country Rank', value=self.pp_country_rank)
@@ -92,6 +92,8 @@ class Osu:
         hvick = OsuPlayer(brainpower[0])
         await self.bot.say(embed=hvick.display(ctx.message.author))
 
+        self.bot.cogs['WordDB'].cmdcount('osu')
+
     @commands.command(pass_context=True, no_pm=True)
     async def osusig(self, ctx, *, args:str):
         """
@@ -119,6 +121,7 @@ class Osu:
         em.set_image(url="http://lemmmy.pw/osusig/sig.php?colour=hex66ccff&uname=" + peppy + "&mode=" + kek)
 
         await self.bot.say(embed=em)
+        self.bot.cogs['WordDB'].cmdcount('osusig')
 
 
 

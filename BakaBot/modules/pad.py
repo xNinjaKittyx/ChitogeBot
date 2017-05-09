@@ -76,6 +76,7 @@ class PAD:
         em.add_field(name='MP Sell Price', value=mon['monster_points'])
         em.add_field(name='Awakenings', value=self.getawaken(mon['awoken_skills']), inline=False)
 
+        self.bot.cogs['WordDB'].cmdcount('pad')
         return em
 
     @commands.command(pass_context=True, no_pm=True)
