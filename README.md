@@ -1,5 +1,6 @@
 # ChitogeBot
 A Python Bot for Discord. Powered by discord.py
+Currently this bot is undergoing a huge rewrite that is currently private. (in order to make it server-compatible)
 
 # What is ChitogeBot?
 ChitogeBot is a chatbot that is used for Discord servers.
