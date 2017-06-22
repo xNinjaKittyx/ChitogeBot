@@ -18,7 +18,8 @@ class Animehangman:
                 'grant_type': 'client_credentials',
                 'client_id': self.anilistid,
                 'client_secret': self.anilistsecret
-        })
+                }
+        )
         if req.status_code != 200:
             print("Cannot get Anilist Access Token")
             return

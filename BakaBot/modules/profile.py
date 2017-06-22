@@ -1,3 +1,0 @@
-""" Profile Module """
-
-import discord
