@@ -1,3 +1,5 @@
+This bot is no longer used. I am currently in development of a complete "rewrite" but also adapting the new "rewrite" library of discord.py. The new bot repository is currently Private, but will open up at some point.
+
 # ChitogeBot
 A Python Bot for Discord. Powered by discord.py
 
@@ -70,4 +72,4 @@ XDCC:
 It also has cleverbot integration, so if you type @[name of Bot] it will respond to you.
 =======
 The up-to-date version is in the develop branch.
->>>>>>> refs/remotes/origin/master
+
