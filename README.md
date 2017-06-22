@@ -1,5 +1,10 @@
 This bot is no longer used. I am currently in development of a complete "rewrite" but also adapting the new "rewrite" library of discord.py. The new bot repository is currently Private, but will open up at some point.
 
+The new bot is named "Koyomi Araragi" and here are some helpful links
+Invite Link: https://discordapp.com/api/oauth2/authorize?client_id=310366123759632385&scope=bot&permissions=0
+Support: https://discord.gg/Fzz344U
+A Really Lame Website: https://xninjakittyx.github.io/KoyomiBot/
+
 # ChitogeBot
 A Python Bot for Discord. Powered by discord.py
 
