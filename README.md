@@ -1,4 +1,8 @@
-This bot is no longer used. I am currently in development of a complete "rewrite" but also adapting the new "rewrite" library of discord.py. The new bot repository is currently Private, but will open up at some point.
+# This bot is no longer used. I am currently in development of a complete "rewrite" but also adapting the new "rewrite" library of discord.py.
+
+# AGAIN IF YOU CAN'T READ. I WILL NOT HELP YOU GET THIS BOT TO WORK BECAUSE SIMPLY IT'S OUTDATED.
+
+The reason why this repository is still available because it has some learning value out of it. But it's not meant to be used with the current state of discord or discord.py. Now stop asking me to help you set up a bot that's outdated.
 
 The new bot is named "Koyomi Araragi" and here are some helpful links
 - Invite Link: https://discordapp.com/api/oauth2/authorize?client_id=310366123759632385&scope=bot&permissions=0
